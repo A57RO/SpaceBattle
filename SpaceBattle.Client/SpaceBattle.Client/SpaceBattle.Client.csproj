@@ -62,6 +62,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -75,6 +76,45 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\PlayerBlue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\PlayerRed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\ShotBlue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\ShotRed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidLargeCarbon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidLargeMagma.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidLargeStone.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidMediumCarbon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidMediumMagma.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidMediumStone.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidSmallCarbon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidSmallMagma.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sprites\AsteroidSmallStone.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

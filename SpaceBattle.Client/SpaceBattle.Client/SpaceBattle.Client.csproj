@@ -116,5 +116,20 @@
   <ItemGroup>
     <None Include="Properties\Sprites\AsteroidSmallStone.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sounds\Explode.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sounds\HitHull.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sounds\HitShield.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sounds\ShotLaser.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\Sounds\Thrust.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,9 +1,0 @@
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\bin\Debug\SpaceBattle.Client.exe.config
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\bin\Debug\SpaceBattle.Client.exe
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\bin\Debug\SpaceBattle.Client.pdb
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\obj\Debug\SpaceBattle.Client.csprojAssemblyReference.cache
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\obj\Debug\SpaceBattle.Client.Properties.Resources.resources
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\obj\Debug\SpaceBattle.Client.csproj.GenerateResource.cache
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\obj\Debug\SpaceBattle.Client.csproj.CoreCompileInputs.cache
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\obj\Debug\SpaceBattle.Client.exe
-C:\Users\Ronne\Desktop\C#\GitHub\SpaceBattle\SpaceBattle.Client\SpaceBattle.Client\obj\Debug\SpaceBattle.Client.pdb

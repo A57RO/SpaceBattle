@@ -1,9 +1,9 @@
 ﻿namespace SpaceBattle.Data
 {
-    public class Command
+    public class EntityCommand
     {
         public int DeltaX;
         public int DeltaY;
-        public IGameObject TransformTo;
+        public IEntity TransformTo;
     }
 }

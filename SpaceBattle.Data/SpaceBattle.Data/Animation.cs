@@ -4,8 +4,8 @@ namespace SpaceBattle.Data
 {
     public class Animation
     {
-        public IGameObject Creature;
-        public Command Command;
+        public IEntity Entity;
+        public EntityCommand EntityCommand;
         public Point Location;
         public Point TargetLogicalLocation;
     }

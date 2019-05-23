@@ -1,6 +1,6 @@
 ﻿namespace SpaceBattle.Data
 {
-    public interface IWeapon
+    public interface IWeapon : IEntity
     {
         int PhysicalDamage { get; }
         int EnergyDamage { get; }

@@ -43,12 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\Player.cs" />
     <Compile Include="EntityAnimation.cs" />
     <Compile Include="ClientInteraction\GameActCommands.cs" />
     <Compile Include="ClientInteraction\ControlSettings.cs" />
     <Compile Include="EntityCommand.cs" />
     <Compile Include="ClientInteraction\ClientCommand.cs" />
-    <Compile Include="GameState.cs" />
+    <Compile Include="GameEngine.cs" />
     <Compile Include="Difficulty\IDifficulty.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="IMortal.cs" />

@@ -25,8 +25,8 @@ namespace SpaceBattle.Data.ClientInteraction
                         case ClientCommand.ActivateShield:
                             Systems = command;
                             break;
-                        case ClientCommand.MoveLeft:
                         case ClientCommand.MoveRight:
+                        case ClientCommand.MoveLeft:
                             HorizontalMove = command;
                             break;
                         case ClientCommand.MoveUp:

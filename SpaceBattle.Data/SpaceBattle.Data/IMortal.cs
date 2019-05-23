@@ -1,11 +1,9 @@
 ﻿namespace SpaceBattle.Data
 {
-    public interface IMortal
+    public interface IMortal : IEntity
     {
         int Health { get; }
-        int Armor { get; }
-        int Shield { get; }
-        double ArmorPenetrationPercentage { get; }
-        double ShieldPenetrationPercentage { get; }
+        double Armor { get; }
+        double Shield { get; }
     }
 }

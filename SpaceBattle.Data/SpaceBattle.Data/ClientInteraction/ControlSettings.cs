@@ -7,14 +7,14 @@ namespace SpaceBattle.Data.ClientInteraction
     {
         public readonly Dictionary<Keys, ClientCommand> ControlMap;
 
-        public ControlSettings(Keys fire, Keys shield, Keys left, Keys right, Keys up, Keys down)
+        public ControlSettings(Keys fire, Keys shield, Keys right, Keys left, Keys up, Keys down)
         {
             ControlMap = new Dictionary<Keys, ClientCommand>
             {
                 {fire, ClientCommand.OpenFire},
                 {shield, ClientCommand.ActivateShield},
-                {left, ClientCommand.MoveLeft},
                 {right, ClientCommand.MoveRight},
+                {left, ClientCommand.MoveLeft},
                 {up, ClientCommand.MoveUp},
                 {down, ClientCommand.MoveDown}
             };

@@ -4,13 +4,12 @@ namespace SpaceBattle.Data
 {
     public interface IEntity
     {
-        Point Position { get; }
-        string ImageFileName { get; }
         /// <summary>
         /// Higher value - sprite closer to the screen
         /// </summary>
         int DrawingPriority { get; }
+        Point Position { get; }
         bool DeadInConflictWith(IEntity conflictedEntity);
-        EntityCommand Act(int x, int y);
+        EntityCommand Act(GameState state);
     }
 }

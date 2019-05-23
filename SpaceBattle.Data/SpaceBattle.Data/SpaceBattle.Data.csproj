@@ -43,15 +43,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Animation.cs" />
+    <Compile Include="EntityAnimation.cs" />
     <Compile Include="ClientInteraction\GameActCommands.cs" />
     <Compile Include="ClientInteraction\ControlSettings.cs" />
     <Compile Include="EntityCommand.cs" />
     <Compile Include="ClientInteraction\ClientCommand.cs" />
+    <Compile Include="GameState.cs" />
+    <Compile Include="Difficulty\IDifficulty.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="IMortal.cs" />
     <Compile Include="IWeapon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

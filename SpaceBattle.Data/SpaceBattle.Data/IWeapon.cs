@@ -2,7 +2,8 @@
 {
     public interface IWeapon
     {
-        int Damage { get; }
+        int PhysicalDamage { get; }
+        int EnergyDamage { get; }
         //int DeltaX { get; }
         //int DeltaY { get; }
     }

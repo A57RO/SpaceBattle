@@ -1,7 +1,10 @@
-﻿namespace SpaceBattle.Data
+﻿using System.Drawing;
+
+namespace SpaceBattle.Data
 {
     public interface IEntity
     {
+        Point Position { get; }
         string ImageFileName { get; }
         /// <summary>
         /// Higher value - sprite closer to the screen

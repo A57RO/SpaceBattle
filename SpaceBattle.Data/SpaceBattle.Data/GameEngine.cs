@@ -41,7 +41,7 @@ namespace SpaceBattle.Data
         {
             MapWidth = mapWidth;
             MapHeight = mapHeight;
-            PlayerEntity = new Player(new Point(mapWidth / 2, 0));
+            PlayerEntity = new Player(new Point(mapWidth / 2, mapHeight - 1));
             ExistingEntities = new List<IEntity> { PlayerEntity };
         }
     }

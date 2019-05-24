@@ -15,6 +15,7 @@ namespace SpaceBattle.Data.ClientInteraction
 
         public GameActCommands(ControlSettings controlSettings, HashSet<Keys> pressedKeys)
         {
+            Systems = HorizontalMove = VerticalMove = ClientCommand.Idle;
             foreach (var key in pressedKeys)
             {
                 if (controlSettings.ControlMap.TryGetValue(key, out var command))

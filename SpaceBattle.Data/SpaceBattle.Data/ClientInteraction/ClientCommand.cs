@@ -2,6 +2,7 @@
 {
     public enum ClientCommand : byte
     {
+        Idle = 0,
         OpenFire = 1,
         ActivateShield = 2,
         MoveRight = 3,

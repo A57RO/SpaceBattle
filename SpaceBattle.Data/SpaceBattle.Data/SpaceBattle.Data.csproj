@@ -43,11 +43,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\EnemyLaserShot.cs" />
+    <Compile Include="Entities\FriendlyLaserShot.cs" />
     <Compile Include="Entities\Player.cs" />
+    <Compile Include="Entities\Shot.cs" />
     <Compile Include="EntityAnimation.cs" />
     <Compile Include="ClientInteraction\GameActCommands.cs" />
     <Compile Include="ClientInteraction\ControlSettings.cs" />
-    <Compile Include="EntityCommand.cs" />
+    <Compile Include="EntityAction.cs" />
     <Compile Include="ClientInteraction\ClientCommand.cs" />
     <Compile Include="GameEngine.cs" />
     <Compile Include="Difficulty\IDifficulty.cs" />

@@ -53,9 +53,9 @@ namespace SpaceBattle.Data.Entities
             return Health <= 0;
         }
 
-        public EntityCommand Act(GameState state)
+        public EntityAction Act(GameState state)
         {
-            var command = new EntityCommand();
+            var action = new EntityAction();
 
             var systemCommand = state.Commands.Systems;
             if (systemCommand == ClientCommand.ActivateShield && Energy >= 2)
@@ -69,7 +69,7 @@ namespace SpaceBattle.Data.Entities
                 if (systemCommand == ClientCommand.OpenFire && Energy >= 10)
                 {
                     Energy -= 10;
-                    //TODO open fire
+                    action.SpawnEntity = new FriendlyLaserShot(new Point(Position.X, Position.Y - 1));
                 }
             }
 
@@ -79,7 +79,9 @@ namespace SpaceBattle.Data.Entities
                 if (horizontalMoveCommand != ClientCommand.Idle)
                 {
                     Energy -= 5;
-                    command.DeltaX = horizontalMoveCommand == ClientCommand.MoveRight ? 1 : -1;
+                    var deltaX = horizontalMoveCommand == ClientCommand.MoveRight ? 1 : -1;
+                    if (state.IsInsideGameField(Position.X + deltaX, Position.Y))
+                        action.DeltaX = deltaX;
                 }
                 else
                 {
@@ -87,13 +89,15 @@ namespace SpaceBattle.Data.Entities
                     if (verticalMoveCommand != ClientCommand.Idle)
                     {
                         Energy -= 5;
-                        command.DeltaY = verticalMoveCommand == ClientCommand.MoveDown ? -1 : 1;
+                        var deltaY = verticalMoveCommand == ClientCommand.MoveDown ? 1 : -1;
+                        if (state.IsInsideGameField(Position.X, Position.Y + deltaY))
+                            action.DeltaY = deltaY;
                     }
                 }
             }
 
             Energy++;
-            return command;
+            return action;
         }
 
         public Player(Point position)

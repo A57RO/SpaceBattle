@@ -5,16 +5,16 @@ namespace SpaceBattle.Data
     public class EntityAnimation
     {
         public IEntity Entity;
-        public EntityCommand EntityCommand;
+        public EntityAction Action;
         //public Point Location;
         public Point TargetLocation => new Point(
-            Entity.Position.X + EntityCommand.DeltaX, 
-            Entity.Position.Y + EntityCommand.DeltaY);
+            Entity.Position.X + Action.DeltaX, 
+            Entity.Position.Y + Action.DeltaY);
 
-        public EntityAnimation(IEntity entity, EntityCommand entityCommand)
+        public EntityAnimation(IEntity entity, EntityAction action)
         {
             Entity = entity;
-            EntityCommand = entityCommand;
+            Action = action;
         }
     }
 }

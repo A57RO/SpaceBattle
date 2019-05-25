@@ -10,6 +10,6 @@ namespace SpaceBattle.Data
         int DrawingPriority { get; }
         Point Position { get; }
         bool DeadInConflictWith(IEntity conflictedEntity);
-        EntityCommand Act(GameState state);
+        EntityAction Act(GameState state);
     }
 }

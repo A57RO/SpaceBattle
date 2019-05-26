@@ -4,17 +4,17 @@ namespace SpaceBattle.Data
 {
     public class EntityAnimation
     {
-        public IEntity Entity;
-        public EntityAction Action;
-        //public Point Location;
-        public Point TargetLocation => new Point(
-            Entity.Position.X + Action.DeltaX, 
-            Entity.Position.Y + Action.DeltaY);
+        public readonly IEntity Entity;
+        public readonly EntityAction Action;
+        public readonly Point PositionAtBeginAct;
+        public readonly Point TargetLocation;
 
         public EntityAnimation(IEntity entity, EntityAction action)
         {
             Entity = entity;
             Action = action;
+            PositionAtBeginAct = Entity.Position;
+            TargetLocation = new Point(PositionAtBeginAct.X + Action.DeltaX, PositionAtBeginAct.Y + Action.DeltaY);
         }
     }
 }

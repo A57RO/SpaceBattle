@@ -4,11 +4,7 @@ namespace SpaceBattle.Data
 {
     public interface IEntity
     {
-        /// <summary>
-        /// Higher value - sprite closer to the screen
-        /// </summary>
-        int DrawingPriority { get; }
-        Point Position { get; }
+        Point Position { get; set; }
         bool DeadInConflictWith(IEntity conflictedEntity);
         EntityAction Act(GameState state);
     }

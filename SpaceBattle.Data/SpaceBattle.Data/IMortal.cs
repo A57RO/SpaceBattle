@@ -5,12 +5,12 @@
         int Health { get; }
 
         /// <summary>
-        /// Amount of PhysicalDamage absorbed by armor
+        /// Количество поглощаемого PhysicalDamage.
         /// </summary>
         int Armor { get; }
 
         /// <summary>
-        /// Shield damage absorption percentage. =0 - shield deactivated, >0 shield activated, =1 - shield absorbs all damage
+        /// Процент поглощения PhysicalDamage щитом =0 - щит отключён, >0 щит активен, =1 - щит поглощает весь урон.
         /// </summary>
         double ShieldStrength { get; }
     }

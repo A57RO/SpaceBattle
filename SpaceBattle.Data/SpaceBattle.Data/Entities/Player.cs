@@ -5,9 +5,7 @@ namespace SpaceBattle.Data.Entities
 {
     public class Player : IMortal
     {
-        public int DrawingPriority => 1;
-
-        public Point Position { get; private set; }
+        public Point Position { get; set; }
 
         private readonly int maxHeath;
         private int health;

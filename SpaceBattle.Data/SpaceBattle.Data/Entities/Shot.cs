@@ -5,9 +5,7 @@ namespace SpaceBattle.Data.Entities
 {
     public abstract class Shot : IWeapon
     {
-        public int DrawingPriority => 3;
-
-        public Point Position { get; private set; }
+        public Point Position { get; set; }
 
         public int PhysicalDamage { get; private set; }
         public int EnergyDamage { get; private set; }

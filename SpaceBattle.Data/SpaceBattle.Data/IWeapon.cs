@@ -3,12 +3,12 @@
     public interface IWeapon : IEntity
     {
         /// <summary>
-        /// If target ShieldStrength > 0, it deals full damage to Energy and damage to Health = damage*(1-ShieldStrength), otherwise only to Health.
-        /// Part of damage to Health is absorbed by Armor.
+        /// Если у цели ShieldStrength > 0, то Health -= PhysicalDamage*(1-ShieldStrength), иначе Health -= PhysicalDamage.
+        /// Часть урона по Health поглощается Armor.
         /// </summary>
         int PhysicalDamage { get; }
         /// <summary>
-        /// If target ShieldStrength > 0, it deals no damage, otherwise full damage to Energy.
+        /// Если у цели ShieldStrength > 0, то Energy -= EnergyDamage, иначе не наносит никакого урона.
         /// </summary>
         int EnergyDamage { get; }
     }

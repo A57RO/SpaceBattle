@@ -9,12 +9,15 @@ namespace SpaceBattle.Data
         public readonly Point PositionAtBeginAct;
         public readonly Point TargetLocation;
 
-        public EntityAnimation(IEntity entity, EntityAction action)
+        public EntityAnimation(IEntity entity, EntityAction action, Point positionAtBeginAct)
         {
             Entity = entity;
             Action = action;
-            PositionAtBeginAct = Entity.Position;
+            PositionAtBeginAct = positionAtBeginAct;
             TargetLocation = new Point(PositionAtBeginAct.X + Action.DeltaX, PositionAtBeginAct.Y + Action.DeltaY);
+        }
+        public EntityAnimation(IEntity entity, EntityAction action) : this(entity, action, entity.Position)
+        {
         }
     }
 }

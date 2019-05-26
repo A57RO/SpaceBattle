@@ -33,20 +33,20 @@ namespace SpaceBattle.Data
         }
 
 
-        public static void EndActGood(GameState sideOne, GameState sideTwo)
+        public static void EndAct(GameState sideOne, GameState sideTwo)
         {
             //Стадия передвижения и получение анимаций переносимых на другую сторону сущностей
             var animationsToSideOne = MoveStage(sideTwo);
             var animationsToSideTwo = MoveStage(sideOne);
             //Конфликт переносимых сущностей и добавление выживших в список существующих сущностей 
             ConflictTransferringEntities(sideOne, animationsToSideOne, animationsToSideTwo);
-            ConflictTransferringEntities(sideTwo, animationsToSideTwo, animationsToSideOne));
+            ConflictTransferringEntities(sideTwo, animationsToSideTwo, animationsToSideOne);
             //Стадия конфликта и удаление мёртвых сущностей
             ConflictStage(sideOne);
             ConflictStage(sideTwo);
         }
         
-        public static List<EntityAnimation> MoveStage(GameState side)
+        private static List<EntityAnimation> MoveStage(GameState side)
         {
             var transferringEntitiesAnimations = new List<EntityAnimation>();
             var animations = side.Animations.ToList();
@@ -77,7 +77,7 @@ namespace SpaceBattle.Data
             throw new ArgumentException($"Unknown transferring entity {entity.GetType().Name}");
         }
 
-        public static Point ConvertCoordinatesToAnotherSide(Point position, Size mapSize) =>
+        private static Point ConvertCoordinatesToAnotherSide(Point position, Size mapSize) =>
             new Point(mapSize.Width - position.X - 1, position.Y);
 
         private static void ConflictTransferringEntities(
@@ -87,6 +87,8 @@ namespace SpaceBattle.Data
         {
             foreach (var animation in incomingAnimations)
             {
+                var action = animation.Action;
+                action.DeltaY = -action.DeltaY;
                 var entity = ConvertTransferredEntity(animation.Entity, destinationSide.MapSize);
                 var conflictedEntities = outcomingAnimations
                     .FindAll(a => a.PositionAtBeginAct.Equals(entity.Position))
@@ -99,12 +101,16 @@ namespace SpaceBattle.Data
                 if (!die)
                 {
                     destinationSide.ExistingEntities.Add(entity);
-                    destinationSide.Animations.Add(new EntityAnimation(entity, new EntityAction()));
+                    destinationSide.Animations.Add(
+                        new EntityAnimation(
+                            entity, 
+                            action, 
+                            new Point(entity.Position.X - action.DeltaX, entity.Position.Y - action.DeltaY)));
                 }
             }
         }
 
-        public static void ConflictStage(GameState side)
+        private static void ConflictStage(GameState side)
         {
             var allEntities = side.ExistingEntities.ToList();
             foreach (var animation in side.Animations)
@@ -148,7 +154,7 @@ namespace SpaceBattle.Data
         public Player PlayerEntity { get; internal set; }
 
         public List<EntityAnimation> Animations { get; internal set; }
-        public GameActCommands Commands { get; internal set; }
+        public GameActCommands Commands { get; set; }
 
 
         public bool IsStarted { get; internal set; }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using SpaceBattle.Data.ClientInteraction;
 using SpaceBattle.Data.Entities;
 
 namespace SpaceBattle.Data
@@ -12,164 +10,140 @@ namespace SpaceBattle.Data
         public static void BeginAct(GameState state)
         {
             state.Animations.Clear();
-            var entitiesToSpawn = new List<IEntity>();
-            foreach (var entity in state.ExistingEntities)
+            for (int y = 0; y < state.MapHeight; y++)
+            for (int x = 0; x < state.MapWidth; x++)
             {
+                var entity = state.Map[y, x];
+                if (entity == null) continue;
+                var location = new Location(y, x);
                 //Act for main entity
-                var action = entity.Act(state);
-                state.Animations.Add(new EntityAnimation(entity, action));
-                //Act for whole chain of SpawnEntities
-                var entityToSpawn = action.SpawnEntity;
-                while (entityToSpawn != null)
-                {
-                    action = entityToSpawn.Act(state);
-                    state.Animations.Add(new EntityAnimation(entityToSpawn, action));
-                    entitiesToSpawn.Add(entityToSpawn);
-                    entityToSpawn = action.SpawnEntity;
-                }
+                var action = entity.Act(state, location);
+                state.Animations.Add(new EntityAnimation(entity, action, location));
+                //Act for whole chain of entities from Spawn
+                Spawn(action.Spawn, state);
             }
-
-            state.ExistingEntities.AddRange(entitiesToSpawn);
         }
 
+        private static void Spawn(Dictionary<IEntity, Location> spawn, GameState state)
+        {
+            foreach (var entityWithPosition in spawn)
+            {
+                var entity = entityWithPosition.Key;
+                var position = entityWithPosition.Value;
+                var action = entity.Act(state, position);
+                var animation = new EntityAnimation(entity, action, position);
+                state.Animations.Add(animation);
+                Spawn(action.Spawn, state);
+            }
+        }
 
         public static void EndAct(GameState sideOne, GameState sideTwo)
         {
-            //Стадия передвижения и получение анимаций переносимых на другую сторону сущностей
-            var animationsToSideOne = MoveStage(sideTwo);
-            var animationsToSideTwo = MoveStage(sideOne);
-            //Конфликт переносимых сущностей и добавление выживших в список существующих сущностей 
-            ConflictTransferringEntities(sideOne, animationsToSideOne, animationsToSideTwo);
-            ConflictTransferringEntities(sideTwo, animationsToSideTwo, animationsToSideOne);
-            //Стадия конфликта и удаление мёртвых сущностей
-            ConflictStage(sideOne);
-            ConflictStage(sideTwo);
+            //Получение списка анимаций сущностей прыгающих на другую сторону и удаление их с текущей стороны
+            var animationsWarpingToSideOne = WarpAnimations(sideTwo);
+            var animationsWarpingToSideTwo = WarpAnimations(sideOne);
+            //Конфликт анимаций прыгающих сущностей и добавление выживших в список анимаций стороны
+            WarpConflict(sideOne, animationsWarpingToSideOne, animationsWarpingToSideTwo);
+            WarpConflict(sideTwo, animationsWarpingToSideTwo, animationsWarpingToSideOne);
+            //Конфликт анимаций в пределах одной стороны включая только что прыгнувших на эту сторону
+            SpaceConflict(sideOne);
+            SpaceConflict(sideTwo);
         }
-        
-        private static List<EntityAnimation> MoveStage(GameState side)
+
+        private static List<EntityAnimation> WarpAnimations(GameState side)
         {
-            var transferringEntitiesAnimations = new List<EntityAnimation>();
+            var warpingEntitiesAnimations = new List<EntityAnimation>();
             var animations = side.Animations.ToList();
             foreach (var animation in animations)
             {
-                var entity = animation.Entity;
                 var targetLocation = animation.TargetLocation;
 
-                if (!side.IsInsideGameField(targetLocation))
-                {
-                    if (targetLocation.Y < 0)
-                        transferringEntitiesAnimations.Add(animation);
-                    side.ExistingEntities.Remove(entity);
-                    side.Animations.Remove(animation);
-                    continue;
-                }
-
-                entity.Position = targetLocation;
+                if (side.IsInsideGameField(targetLocation)) continue;
+                if (targetLocation.Y < 0)
+                    warpingEntitiesAnimations.Add(animation);
+                side.Animations.Remove(animation);
             }
 
-            return transferringEntitiesAnimations;
+            return warpingEntitiesAnimations;
         }
 
-        private static IEntity ConvertTransferredEntity(IEntity entity, Size mapSize)
-        {
-            if (entity is FriendlyLaserShot)
-                return new EnemyLaserShot(ConvertCoordinatesToAnotherSide(entity.Position, mapSize));
-            throw new ArgumentException($"Unknown transferring entity {entity.GetType().Name}");
-        }
-
-        private static Point ConvertCoordinatesToAnotherSide(Point position, Size mapSize) =>
-            new Point(mapSize.Width - position.X - 1, position.Y);
-
-        private static void ConflictTransferringEntities(
+        private static void WarpConflict(
             GameState destinationSide,
-            List<EntityAnimation> incomingAnimations, 
-            List<EntityAnimation> outcomingAnimations)
+            List<EntityAnimation> incomingAnimations,
+            List<EntityAnimation> outgoingAnimations)
         {
-            foreach (var animation in incomingAnimations)
+            var incomingAnimationsInDestination =
+                incomingAnimations.Select(a => ConvertWarpedEntityAnimation(destinationSide, a)).ToList();
+            foreach (var animation in incomingAnimationsInDestination)
             {
-                var action = animation.Action;
-                action.DeltaY = -action.DeltaY;
-                var entity = ConvertTransferredEntity(animation.Entity, destinationSide.MapSize);
-                var conflictedEntities = outcomingAnimations
-                    .FindAll(a => a.PositionAtBeginAct.Equals(entity.Position))
-                    .Select(a => a.Entity);
-                var die = false;
-                foreach (var conflictedEntity in conflictedEntities)
-                    if (entity.DeadInConflictWith(conflictedEntity))
-                        die = true;
-
-                if (!die)
-                {
-                    destinationSide.ExistingEntities.Add(entity);
-                    destinationSide.Animations.Add(
-                        new EntityAnimation(
-                            entity, 
-                            action, 
-                            new Point(entity.Position.X - action.DeltaX, entity.Position.Y - action.DeltaY)));
-                }
+                if (SurvivedInConflictWithParticipants(animation, incomingAnimationsInDestination) &&
+                    SurvivedInConflictWithParticipants(animation, outgoingAnimations))
+                    destinationSide.Animations.Add(animation);
             }
         }
 
-        private static void ConflictStage(GameState side)
+        private static void SpaceConflict(GameState state)
         {
-            var allEntities = side.ExistingEntities.ToList();
-            foreach (var animation in side.Animations)
+            var survivedEntitiesAnimations = new List<EntityAnimation>();
+            foreach (var animation in state.Animations)
             {
-                var entity = animation.Entity;
-                var action = animation.Action;
-                //Стоявшие в соседних клетках сущности которые пересеклись в движении
-                var conflictedEntities = side.Animations
-                    .FindAll(a => 
-                        entity.Position.Equals(a.PositionAtBeginAct) &&
-                        entity != a.Entity &&
-                        action.DeltaX + a.Action.DeltaX == 0 &&
-                        action.DeltaY + a.Action.DeltaY == 0)
-                    .Select(a => a.Entity)
-                    .ToList();
-                //Сущности попавшие в одинаковую позицию
-                conflictedEntities.AddRange(
-                    allEntities.FindAll(e => 
-                        e.Position.Equals(entity.Position) &&
-                        entity != e));
-
-                var die = false;
-                foreach (var conflictedEntity in conflictedEntities)
-                    if (entity.DeadInConflictWith(conflictedEntity))
-                        die = true;
-
-                if (die)
-                    side.ExistingEntities.Remove(entity);
+                if (SurvivedInConflictWithParticipants(animation, state.Animations))
+                    survivedEntitiesAnimations.Add(animation);
             }
+            state.UpdateStateAfterAct(survivedEntitiesAnimations);
         }
-    }
 
-    public class GameState
-    {
-        //public IDifficulty Difficulty { get; private set; }
-        public readonly Size MapSize;
-        public bool IsInsideGameField(int x, int y) => x >= 0 && x < MapSize.Width && y >= 0 && y < MapSize.Height;
-        public bool IsInsideGameField(Point position) => IsInsideGameField(position.X, position.Y);
-
-        public List<IEntity> ExistingEntities { get; internal set; }
-        public Player PlayerEntity { get; internal set; }
-
-        public List<EntityAnimation> Animations { get; internal set; }
-        public GameActCommands Commands { get; set; }
-
-
-        public bool IsStarted { get; internal set; }
-        public bool IsOver { get; internal set; }
-        public bool IsWin { get; internal set; }
-
-        public GameState(Size mapSize)
+        private static bool SurvivedInConflictWithParticipants(EntityAnimation animation, List<EntityAnimation> conflictParticipants)
         {
-            MapSize = mapSize;
-            PlayerEntity = new Player(new Point(MapSize.Width / 2, MapSize.Height - 1));
-            ExistingEntities = new List<IEntity> {PlayerEntity};
-            Animations = new List<EntityAnimation>();
+            var animationIsAlive = true;
+            var conflictedEntitiesAnimations = conflictParticipants.FindAll(a => InConflict(animation, a));
+            foreach (var conflictedEntityAnimation in conflictedEntitiesAnimations)
+            {
+                if (animation.Entity.DeadInConflictWith(conflictedEntityAnimation.Entity))
+                    animationIsAlive = false;
+            }
+
+            return animationIsAlive;
         }
-        public GameState(int mapHeight, int mapWidth) : this(new Size(mapWidth, mapHeight))
+
+        private static bool InConflict(EntityAnimation first, EntityAnimation second)
         {
+            return Confronted() || Crossed();
+
+            //Попали в одинаковую позицию
+            bool Confronted() =>
+                first.TargetLocation.Equals(second.TargetLocation) &&
+                first.Entity != second.Entity;
+
+            //Поменялись местами (пересеклись в движении)
+            bool Crossed() =>
+                first.TargetLocation.Equals(second.BeginActLocation) &&
+                second.TargetLocation.Equals(first.BeginActLocation) &&
+                first.Action.DeltaX + second.Action.DeltaX == 0 &&
+                first.Action.DeltaY + second.Action.DeltaY == 0;
         }
+
+        private static EntityAnimation ConvertWarpedEntityAnimation(
+            GameState destinationSide,
+            EntityAnimation animation)
+        {
+            var oldEntity = animation.Entity;
+            var newLocation = ConvertCoordinatesToAnotherSide(animation.TargetLocation, destinationSide.MapWidth);
+            IEntity newEntity = null;
+            switch (oldEntity)
+            {
+                case FriendlyLaserShot friendlyLaserShot:
+                    newEntity = new EnemyLaserShot(friendlyLaserShot);
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown transferring entity {oldEntity.GetType().Name} at location {animation.BeginActLocation}");
+            }
+
+            var newAction = newEntity.Act(destinationSide, newLocation);
+            return new EntityAnimation(newEntity, newAction, newLocation);
+        }
+
+        private static Location ConvertCoordinatesToAnotherSide(Location location, int mapWidth) =>
+            new Location(location.Y, mapWidth - location.X - 1);
     }
 }

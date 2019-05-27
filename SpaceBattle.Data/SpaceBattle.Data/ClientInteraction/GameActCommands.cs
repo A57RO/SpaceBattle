@@ -5,7 +5,7 @@ using System.Windows.Forms;
 namespace SpaceBattle.Data.ClientInteraction
 {
     /// <summary>
-    /// Client transmit instance of this class to server at beginning of game act
+    /// Клиент передаёт этот класс на сервер в начале акта
     /// </summary>
     public class GameActCommands
     {
@@ -13,9 +13,12 @@ namespace SpaceBattle.Data.ClientInteraction
         public readonly ClientCommand HorizontalMove;
         public readonly ClientCommand VerticalMove;
 
+        public static GameActCommands IdleCommands => new GameActCommands(null, null);
+
         public GameActCommands(ControlSettings controlSettings, HashSet<Keys> pressedKeys)
         {
             Systems = HorizontalMove = VerticalMove = ClientCommand.Idle;
+            if (controlSettings == null || pressedKeys == null) return;
             foreach (var key in pressedKeys)
             {
                 if (controlSettings.ControlMap.TryGetValue(key, out var command))

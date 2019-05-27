@@ -33,7 +33,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -54,9 +53,11 @@
     <Compile Include="ClientInteraction\ClientCommand.cs" />
     <Compile Include="GameEngine.cs" />
     <Compile Include="Difficulty\IDifficulty.cs" />
+    <Compile Include="GameState.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="IMortal.cs" />
     <Compile Include="IWeapon.cs" />
+    <Compile Include="Location.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

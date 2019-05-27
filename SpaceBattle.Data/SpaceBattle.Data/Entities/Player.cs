@@ -1,12 +1,9 @@
-﻿using System.Drawing;
-using SpaceBattle.Data.ClientInteraction;
+﻿using SpaceBattle.Data.ClientInteraction;
 
 namespace SpaceBattle.Data.Entities
 {
     public class Player : IMortal
     {
-        public Point Position { get; set; }
-
         private readonly int maxHeath;
         private int health;
         public int Health
@@ -51,7 +48,7 @@ namespace SpaceBattle.Data.Entities
             return Health <= 0;
         }
 
-        public EntityAction Act(GameState state)
+        public EntityAction Act(GameState state, Location location)
         {
             var action = new EntityAction();
 
@@ -67,7 +64,7 @@ namespace SpaceBattle.Data.Entities
                 if (systemCommand == ClientCommand.OpenFire && Energy >= 10)
                 {
                     Energy -= 10;
-                    action.SpawnEntity = new FriendlyLaserShot(new Point(Position.X, Position.Y - 1));
+                    action.Spawn.Add(new FriendlyLaserShot(), new Location(location.Y - 1, location.X));
                 }
             }
 
@@ -78,7 +75,7 @@ namespace SpaceBattle.Data.Entities
                 {
                     Energy -= 5;
                     var deltaX = horizontalMoveCommand == ClientCommand.MoveRight ? 1 : -1;
-                    if (state.IsInsideGameField(Position.X + deltaX, Position.Y))
+                    if (state.IsInsideGameField(location.Y, location.X + deltaX))
                         action.DeltaX = deltaX;
                 }
                 else
@@ -88,7 +85,7 @@ namespace SpaceBattle.Data.Entities
                     {
                         Energy -= 5;
                         var deltaY = verticalMoveCommand == ClientCommand.MoveDown ? 1 : -1;
-                        if (state.IsInsideGameField(Position.X, Position.Y + deltaY))
+                        if (state.IsInsideGameField(location.Y + deltaY, location.X))
                             action.DeltaY = deltaY;
                     }
                 }
@@ -98,9 +95,9 @@ namespace SpaceBattle.Data.Entities
             return action;
         }
 
-        public Player(Point position)
+        public Player()
         {
-            Position = position;
+            //Position = position;
 
             maxHeath = 100;
             Health = maxHeath;

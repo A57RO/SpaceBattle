@@ -1,24 +1,19 @@
 ﻿using System;
-using System.Drawing;
 
 namespace SpaceBattle.Data.Entities
 {
     public abstract class Shot : IWeapon
     {
-        public Point Position { get; set; }
-
-        public int PhysicalDamage { get; private set; }
-        public int EnergyDamage { get; private set; }
+        public int PhysicalDamage { get; protected set; }
+        public int EnergyDamage { get; protected set; }
 
         public bool DeadInConflictWith(IEntity conflictedEntity) => true;
         
-        private readonly Func<GameState, EntityAction> act;
-        public EntityAction Act(GameState state) => act(state);
+        private readonly Func<GameState, Location, EntityAction> act;
+        public EntityAction Act(GameState state, Location location) => act(state, location);
 
-        protected Shot(Point position, Func<GameState, EntityAction> act, int physicalDamage, int energyDamage)
+        protected Shot(Func<GameState, Location, EntityAction> act, int physicalDamage, int energyDamage)
         {
-            Position = position;
-
             PhysicalDamage = physicalDamage;
             EnergyDamage = energyDamage;
 

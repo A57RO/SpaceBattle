@@ -19,25 +19,25 @@ namespace SpaceBattle.Client
         private readonly ControlSettings controlSettings = new ControlSettings(Keys.W, Keys.S, Keys.Right, Keys.Left, Keys.Up, Keys.Down);
         private readonly Size mapSize = new Size(10, 5);
         private bool bottomIsRed;
-        private GameState topSide;
-        private GameState bottomSide;
-        private Dictionary<Bitmap, Point> topSideGraphics;
-        private Dictionary<Bitmap, Point> bottomSideGraphics;
+        private GameState topState;
+        private GameState bottomState;
+        private Dictionary<Bitmap, Point> topStateGraphics;
+        private Dictionary<Bitmap, Point> bottomStateGraphics;
 
         public GameWindow()
         {
-            bottomSide = new GameState(mapSize.Height, mapSize.Width);
-            topSide = new GameState(mapSize.Height, mapSize.Width);
-            topSideGraphics = new Dictionary<Bitmap, Point>();
-            bottomSideGraphics = new Dictionary<Bitmap, Point>();
+            bottomState = new GameState(mapSize.Height, mapSize.Width);
+            topState = new GameState(mapSize.Height, mapSize.Width);
+            topStateGraphics = new Dictionary<Bitmap, Point>();
+            bottomStateGraphics = new Dictionary<Bitmap, Point>();
             //TODO
             bottomIsRed = true;
 
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             ClientSize = new Size(
-                elementSize * bottomSide.MapWidth,
-                elementSize * (bottomSide.MapHeight + topSide.MapHeight));
+                elementSize * bottomState.MapWidth,
+                elementSize * (bottomState.MapHeight + topState.MapHeight));
             StartPosition = FormStartPosition.Manual;
             Location = new Point(0, 0);
             BackColor = Color.Black;
@@ -55,32 +55,32 @@ namespace SpaceBattle.Client
             {
                 if (tickCount == 0)
                 {
-                    bottomSide.GiveClientCommands(new GameActCommands(controlSettings, pressedKeys));
+                    bottomState.GiveCommandsFromClient(new GameActCommands(controlSettings, pressedKeys));
                     //bottomSide.GiveClientCommands(new GameActCommands(controlSettings, new HashSet<Keys>() {Keys.W}));
-                    GameEngine.BeginAct(bottomSide);
-                    GameEngine.BeginAct(topSide);
+                    GameEngine.BeginAct(bottomState);
+                    GameEngine.BeginAct(topState);
                 }
                 /*
                 foreach (var animation in downSideAnimations)
                     animation.Location = new Point(animation.Location.X + 8 * animation.Command.DeltaX, animation.Location.Y + 8 * animation.Command.DeltaY);
                 */
 
-                topSideGraphics = topSide.Animations.ToDictionary(
+                topStateGraphics = topState.Animations.ToDictionary(
                     a => GetImageForEntity(a.Entity, false),
                     a => new Point(
                         a.BeginActLocation.X * elementSize + tickCount * 4 * a.Action.DeltaX,
                         a.BeginActLocation.Y * elementSize + tickCount * 4 * a.Action.DeltaY));
-                bottomSideGraphics = bottomSide.Animations.ToDictionary(
+                bottomStateGraphics = bottomState.Animations.ToDictionary(
                     a => GetImageForEntity(a.Entity, true),
                     a => new Point(
                         a.BeginActLocation.X * elementSize + tickCount * 4 * a.Action.DeltaX,
-                        (topSide.MapHeight + a.BeginActLocation.Y) * elementSize + tickCount * 4 * a.Action.DeltaY));
+                        (topState.MapHeight + a.BeginActLocation.Y) * elementSize + tickCount * 4 * a.Action.DeltaY));
 
                 
                 tickCount++;
                 if (tickCount == 9)
                 {
-                    GameEngine.EndAct(bottomSide, topSide);
+                    GameEngine.EndAct(bottomState, topState);
                     tickCount = 0;
                 }
 
@@ -111,9 +111,9 @@ namespace SpaceBattle.Client
         protected override void OnPaint(PaintEventArgs e)
         {
             //e.Graphics.TranslateTransform(0, elementSize);
-            foreach (var a in topSideGraphics)
+            foreach (var a in topStateGraphics)
                 e.Graphics.DrawImage(a.Key, a.Value);
-            foreach (var a in bottomSideGraphics)
+            foreach (var a in bottomStateGraphics)
                 e.Graphics.DrawImage(a.Key, a.Value);
             //e.Graphics.ResetTransform();
         }

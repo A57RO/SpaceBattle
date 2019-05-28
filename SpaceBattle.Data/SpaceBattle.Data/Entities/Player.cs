@@ -52,7 +52,7 @@ namespace SpaceBattle.Data.Entities
         {
             var action = new EntityAction();
 
-            var systemCommand = state.Commands.Systems;
+            var systemCommand = state.CommandsFromClient.Systems;
             if (systemCommand == ClientCommand.ActivateShield && Energy >= 2)
             {
                 Energy -= 2;
@@ -70,7 +70,7 @@ namespace SpaceBattle.Data.Entities
 
             if (Energy >= 5)
             {
-                var horizontalMoveCommand = state.Commands.HorizontalMove;
+                var horizontalMoveCommand = state.CommandsFromClient.HorizontalMove;
                 if (horizontalMoveCommand != ClientCommand.Idle)
                 {
                     Energy -= 5;
@@ -80,7 +80,7 @@ namespace SpaceBattle.Data.Entities
                 }
                 else
                 {
-                    var verticalMoveCommand = state.Commands.VerticalMove;
+                    var verticalMoveCommand = state.CommandsFromClient.VerticalMove;
                     if (verticalMoveCommand != ClientCommand.Idle)
                     {
                         Energy -= 5;

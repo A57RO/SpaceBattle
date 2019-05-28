@@ -2,12 +2,12 @@
 {
     public class FriendlyLaserShot : Shot
     {
-        private static EntityAction act(GameState state, Location location)
+        private static EntityAction FriendlyLaserShotAct(GameState state, Location location)
         {
             return new EntityAction {DeltaY = -1};
         }
         
-        public FriendlyLaserShot() : base(act, 10, 25)
+        public FriendlyLaserShot() : base(FriendlyLaserShotAct, 10, 25)
         {
         }
     }

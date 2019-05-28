@@ -15,12 +15,15 @@ namespace SpaceBattle.Data
 
         public IEntity[,] Map { get; private set; } //[y,x]
         public Player PlayerEntity { get; private set; }
-
-        public List<EntityAnimation> Animations { get; private set; }
-        public GameActCommands Commands { get; private set; }
         
-        public bool IsOver { get; private set; }
-        public bool IsWin { get; private set; }
+        public List<EntityAnimation> Animations { get; private set; }
+        public GameActCommands CommandsFromClient { get; private set; }
+
+        /// <summary>
+        /// False = игра ещё в процессе или закончилась победой. True = игра закончилась поражением.
+        /// Победу проверять по данному полю состояния противника.
+        /// </summary>
+        public bool GameOver { get; private set; }
         
         public GameState(int mapHeight, int mapWidth)
         {
@@ -33,33 +36,38 @@ namespace SpaceBattle.Data
             PlayerEntity = new Player();
             Map[playerPosition.Y, playerPosition.X] = PlayerEntity;
             Animations = new List<EntityAnimation>();
-            Commands = GameActCommands.IdleCommands;
-            IsOver = IsWin = false;
+            CommandsFromClient = GameActCommands.IdleCommands;
+            GameOver = false;
         }
 
-        public void GiveClientCommands(GameActCommands commands)
+        public void GiveCommandsFromClient(GameActCommands commands)
         {
-            Commands = commands;
+            if (commands != null)
+                CommandsFromClient = commands;
         }
 
+        /// <summary>
+        /// Общее обновление состояния в середине или конце акта.
+        /// </summary>
+        /// <param name="newAnimations">Анимации нового состояния</param>
         public void UpdateStateInAct(List<EntityAnimation> newAnimations)
         {
-            Animations = newAnimations;
+            Animations = newAnimations ?? throw new ArgumentNullException();
             Map = new IEntity[MapHeight, MapWidth];
             var newPlayerAnimation = newAnimations.Find(a => a.Entity is Player);
             if (newPlayerAnimation != null)
-                PlayerEntity = (Player)newPlayerAnimation.Entity;
+                PlayerEntity = (Player) newPlayerAnimation.Entity;
             else
-            {
-                IsOver = true;
-                IsWin = false;
-            }
+                GameOver = true;
         }
-
+        /// <summary>
+        /// Внутреннее обновление состояния из движка по окончанию акта.
+        /// </summary>
+        /// <param name="newAnimations">Анимации нового состояния</param>
         internal void UpdateStateAfterAct(List<EntityAnimation> newAnimations)
         {
             UpdateStateInAct(newAnimations);
-            Commands = GameActCommands.IdleCommands;
+            CommandsFromClient = GameActCommands.IdleCommands;
             foreach (var animation in newAnimations)
                 Map[animation.TargetLocation.Y, animation.TargetLocation.X] = animation.Entity;
         }

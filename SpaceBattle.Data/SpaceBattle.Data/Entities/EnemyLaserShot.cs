@@ -2,16 +2,16 @@
 {
     public class EnemyLaserShot : Shot
     {
-        private static EntityAction act(GameState state, Location location)
+        private static EntityAction EnemyLaserShotAct(GameState state, Location location)
         {
             return new EntityAction { DeltaY = 1 };
         }
 
-        public EnemyLaserShot() : base(act, 10, 25)
+        public EnemyLaserShot() : base(EnemyLaserShotAct, 10, 25)
         {
         }
 
-        public EnemyLaserShot(FriendlyLaserShot shot) : base(act, shot.PhysicalDamage, shot.EnergyDamage)
+        public EnemyLaserShot(FriendlyLaserShot shot) : base(EnemyLaserShotAct, shot.PhysicalDamage, shot.EnergyDamage)
         {
         }
     }

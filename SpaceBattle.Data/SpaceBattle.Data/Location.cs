@@ -18,7 +18,7 @@
         public override bool Equals(object obj)
         {
             if (obj != null && obj is Location l)
-                return Y == l.Y && X == l.X;//Equals(l);
+                return Y == l.Y && X == l.X;
             return false;
         }
 

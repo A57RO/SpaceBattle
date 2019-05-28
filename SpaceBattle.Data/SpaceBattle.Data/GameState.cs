@@ -15,7 +15,8 @@ namespace SpaceBattle.Data
 
         public IEntity[,] Map { get; private set; } //[y,x]
         public Player PlayerEntity { get; private set; }
-        
+        public EntityAnimation PlayerAnimation { get; private set; }
+
         public List<EntityAnimation> Animations { get; private set; }
         public GameActCommands CommandsFromClient { get; private set; }
 
@@ -34,6 +35,7 @@ namespace SpaceBattle.Data
             Map = new IEntity[mapHeight, mapWidth];
             var playerPosition = new Location(mapHeight - 1, mapWidth / 2);
             PlayerEntity = new Player();
+            PlayerAnimation = new EntityAnimation(PlayerEntity, new EntityAction(), playerPosition);
             Map[playerPosition.Y, playerPosition.X] = PlayerEntity;
             Animations = new List<EntityAnimation>();
             CommandsFromClient = GameActCommands.IdleCommands;
@@ -56,9 +58,15 @@ namespace SpaceBattle.Data
             Map = new IEntity[MapHeight, MapWidth];
             var newPlayerAnimation = newAnimations.Find(a => a.Entity is Player);
             if (newPlayerAnimation != null)
+            {
+                PlayerAnimation = newPlayerAnimation;
                 PlayerEntity = (Player) newPlayerAnimation.Entity;
+            }
             else
+            {
+                PlayerEntity = null;
                 GameOver = true;
+            }
         }
         /// <summary>
         /// Внутреннее обновление состояния из движка по окончанию акта.

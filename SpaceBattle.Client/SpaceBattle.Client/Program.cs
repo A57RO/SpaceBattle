@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SpaceBattle.Data.ClientInteraction;
 
 namespace SpaceBattle.Client
 {
@@ -16,7 +17,11 @@ namespace SpaceBattle.Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new GameWindow());
+            Application.Run(
+                new GameWindow(
+                    new ControlSettings(Keys.ControlKey, Keys.ShiftKey, Keys.Right, Keys.Left, Keys.Up, Keys.Down),
+                    10,
+                    21));
         }
     }
 }

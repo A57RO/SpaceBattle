@@ -15,20 +15,21 @@ namespace SpaceBattle.Client
     public class GameWindow : Form
     {
         private readonly HashSet<Keys> pressedKeys = new HashSet<Keys>();
-        private readonly ControlSettings controlSettings = new ControlSettings(Keys.ControlKey, Keys.ShiftKey, Keys.Right, Keys.Left, Keys.Up, Keys.Down);
-        private readonly Size mapSize = new Size(10, 5);
-        private bool bottomIsRed;
-        private GameState topSideState;
-        private GameState bottomState;
-        private readonly Dictionary<Bitmap, HashSet<Point>> topStateDrawingElements;
-        private readonly Dictionary<Bitmap, HashSet<Point>> bottomDrawingElements;
+        private readonly ControlSettings controlSettings;
+        private readonly bool bottomIsRed;
+        private readonly GameState topSideState;
+        private readonly GameState bottomState;
+        private readonly Dictionary<Bitmap, HashSet<Point>> topSideDrawingElements;
+        private readonly Dictionary<Bitmap, HashSet<Point>> bottomSideDrawingElements;
+        private int tickCount = 0;
 
-        public GameWindow()
+        public GameWindow(ControlSettings controlSettings, int mapHeight, int mapWidth)
         {
-            bottomState = new GameState(mapSize.Height, mapSize.Width);
-            topSideState = new GameState(mapSize.Height, mapSize.Width);
-            topStateDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
-            bottomDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
+            this.controlSettings = controlSettings;
+            bottomState = new GameState(mapHeight, mapWidth);
+            topSideState = new GameState(mapHeight, mapWidth);
+            topSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
+            bottomSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
             //TODO
             bottomIsRed = true;
 
@@ -41,47 +42,47 @@ namespace SpaceBattle.Client
             Location = new Point(0, 0);
             BackColor = Color.Black;
             var timer = new Timer { Interval = 10 };
-            var tickCount = 0;
-            timer.Tick += (sender, args) =>
-            {
-                if (tickCount == 0)
-                {
-                    bottomState.GiveCommandsFromClient(new GameActCommands(controlSettings, pressedKeys));
-                    //bottomSide.GiveClientCommands(new GameActCommands(controlSettings, new HashSet<Keys>() {Keys.W}));
-                    GameEngine.BeginAct(bottomState);
-                    GameEngine.BeginAct(topSideState);
-                }
-
-                Visual.UpdateDrawingElements(
-                    bottomDrawingElements,
-                    bottomState.Animations,
-                    true,
-                    bottomIsRed,
-                    bottomState.MapWidth,
-                    bottomState.MapHeight,
-                    tickCount);
-
-                Visual.UpdateDrawingElements(
-                    topStateDrawingElements,
-                    topSideState.Animations,
-                    false,
-                    !bottomIsRed,
-                    topSideState.MapWidth,
-                    topSideState.MapHeight,
-                    tickCount);
-
-                tickCount++;
-                if (tickCount == 9)
-                {
-                    GameEngine.EndAct(bottomState, topSideState);
-                    tickCount = 0;
-                }
-
-                Invalidate();
-
-            };
+            timer.Tick += OnTick;
             timer.Start();
             //InitializeComponent();
+        }
+
+        private void OnTick(object sender, EventArgs e)
+        {
+            if (tickCount == 0)
+            {
+                bottomState.GiveCommandsFromClient(new GameActCommands(controlSettings, pressedKeys));
+                //bottomSide.GiveClientCommands(new GameActCommands(controlSettings, new HashSet<Keys>() {Keys.W}));
+                GameEngine.BeginAct(bottomState);
+                GameEngine.BeginAct(topSideState);
+            }
+
+            Visual.UpdateDrawingElements(
+                bottomSideDrawingElements,
+                bottomState.Animations,
+                true,
+                bottomIsRed,
+                bottomState.MapWidth,
+                bottomState.MapHeight,
+                tickCount);
+
+            Visual.UpdateDrawingElements(
+                topSideDrawingElements,
+                topSideState.Animations,
+                false,
+                !bottomIsRed,
+                topSideState.MapWidth,
+                topSideState.MapHeight,
+                tickCount);
+
+            tickCount++;
+            if (tickCount == 9)
+            {
+                GameEngine.EndAct(bottomState, topSideState);
+                tickCount = 0;
+            }
+
+            Invalidate();
         }
 
         protected override void OnLoad(EventArgs e)
@@ -104,10 +105,10 @@ namespace SpaceBattle.Client
         protected override void OnPaint(PaintEventArgs e)
         {
             //e.Graphics.TranslateTransform(0, elementSize);
-            foreach (var element in topStateDrawingElements)
+            foreach (var element in topSideDrawingElements)
             foreach (var point in element.Value)
                 e.Graphics.DrawImage(element.Key, point);
-            foreach (var element in bottomDrawingElements)
+            foreach (var element in bottomSideDrawingElements)
             foreach (var point in element.Value)
                 e.Graphics.DrawImage(element.Key, point);
             //e.Graphics.ResetTransform();

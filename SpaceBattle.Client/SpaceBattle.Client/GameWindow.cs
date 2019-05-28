@@ -14,41 +14,32 @@ namespace SpaceBattle.Client
 {
     public class GameWindow : Form
     {
-        private const int elementSize = 32;
         private readonly HashSet<Keys> pressedKeys = new HashSet<Keys>();
-        private readonly ControlSettings controlSettings = new ControlSettings(Keys.W, Keys.S, Keys.Right, Keys.Left, Keys.Up, Keys.Down);
+        private readonly ControlSettings controlSettings = new ControlSettings(Keys.ControlKey, Keys.ShiftKey, Keys.Right, Keys.Left, Keys.Up, Keys.Down);
         private readonly Size mapSize = new Size(10, 5);
         private bool bottomIsRed;
-        private GameState topState;
+        private GameState topSideState;
         private GameState bottomState;
-        private Dictionary<Bitmap, Point> topStateGraphics;
-        private Dictionary<Bitmap, Point> bottomStateGraphics;
+        private readonly Dictionary<Bitmap, HashSet<Point>> topStateDrawingElements;
+        private readonly Dictionary<Bitmap, HashSet<Point>> bottomDrawingElements;
 
         public GameWindow()
         {
             bottomState = new GameState(mapSize.Height, mapSize.Width);
-            topState = new GameState(mapSize.Height, mapSize.Width);
-            topStateGraphics = new Dictionary<Bitmap, Point>();
-            bottomStateGraphics = new Dictionary<Bitmap, Point>();
+            topSideState = new GameState(mapSize.Height, mapSize.Width);
+            topStateDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
+            bottomDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
             //TODO
             bottomIsRed = true;
 
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             ClientSize = new Size(
-                elementSize * bottomState.MapWidth,
-                elementSize * (bottomState.MapHeight + topState.MapHeight));
+                Visual.ElementSize * bottomState.MapWidth,
+                Visual.ElementSize * (bottomState.MapHeight + topSideState.MapHeight));
             StartPosition = FormStartPosition.Manual;
             Location = new Point(0, 0);
             BackColor = Color.Black;
-            /*
-            if (imagesDirectory == null)
-                imagesDirectory = new DirectoryInfo("Images");
-            foreach (var e in imagesDirectory.GetFiles("*.png"))
-                bitmaps[e.Name] = (Bitmap)Image.FromFile(e.FullName);
-
-            initializeStartScreen();
-            */
             var timer = new Timer { Interval = 10 };
             var tickCount = 0;
             timer.Tick += (sender, args) =>
@@ -58,29 +49,31 @@ namespace SpaceBattle.Client
                     bottomState.GiveCommandsFromClient(new GameActCommands(controlSettings, pressedKeys));
                     //bottomSide.GiveClientCommands(new GameActCommands(controlSettings, new HashSet<Keys>() {Keys.W}));
                     GameEngine.BeginAct(bottomState);
-                    GameEngine.BeginAct(topState);
+                    GameEngine.BeginAct(topSideState);
                 }
-                /*
-                foreach (var animation in downSideAnimations)
-                    animation.Location = new Point(animation.Location.X + 8 * animation.Command.DeltaX, animation.Location.Y + 8 * animation.Command.DeltaY);
-                */
 
-                topStateGraphics = topState.Animations.ToDictionary(
-                    a => GetImageForEntity(a.Entity, false),
-                    a => new Point(
-                        a.BeginActLocation.X * elementSize + tickCount * 4 * a.Action.DeltaX,
-                        a.BeginActLocation.Y * elementSize + tickCount * 4 * a.Action.DeltaY));
-                bottomStateGraphics = bottomState.Animations.ToDictionary(
-                    a => GetImageForEntity(a.Entity, true),
-                    a => new Point(
-                        a.BeginActLocation.X * elementSize + tickCount * 4 * a.Action.DeltaX,
-                        (topState.MapHeight + a.BeginActLocation.Y) * elementSize + tickCount * 4 * a.Action.DeltaY));
+                Visual.UpdateDrawingElements(
+                    bottomDrawingElements,
+                    bottomState.Animations,
+                    true,
+                    bottomIsRed,
+                    bottomState.MapWidth,
+                    bottomState.MapHeight,
+                    tickCount);
 
-                
+                Visual.UpdateDrawingElements(
+                    topStateDrawingElements,
+                    topSideState.Animations,
+                    false,
+                    !bottomIsRed,
+                    topSideState.MapWidth,
+                    topSideState.MapHeight,
+                    tickCount);
+
                 tickCount++;
                 if (tickCount == 9)
                 {
-                    GameEngine.EndAct(bottomState, topState);
+                    GameEngine.EndAct(bottomState, topSideState);
                     tickCount = 0;
                 }
 
@@ -111,47 +104,13 @@ namespace SpaceBattle.Client
         protected override void OnPaint(PaintEventArgs e)
         {
             //e.Graphics.TranslateTransform(0, elementSize);
-            foreach (var a in topStateGraphics)
-                e.Graphics.DrawImage(a.Key, a.Value);
-            foreach (var a in bottomStateGraphics)
-                e.Graphics.DrawImage(a.Key, a.Value);
+            foreach (var element in topStateDrawingElements)
+            foreach (var point in element.Value)
+                e.Graphics.DrawImage(element.Key, point);
+            foreach (var element in bottomDrawingElements)
+            foreach (var point in element.Value)
+                e.Graphics.DrawImage(element.Key, point);
             //e.Graphics.ResetTransform();
-        }
-
-        protected Bitmap GetImageForEntity(IEntity entity, bool sideIsBottom)
-        {
-            var red = new Dictionary<string, Bitmap>
-            {
-                {typeof(Data.Entities.Player).Name, Properties.Resources.PlayerRed},
-                {typeof(Data.Entities.FriendlyLaserShot).Name, Properties.Resources.ShotRed},
-                {typeof(Data.Entities.EnemyLaserShot).Name, Properties.Resources.ShotBlue}
-            };
-            var blue = new Dictionary<string, Bitmap>
-            {
-                {typeof(Data.Entities.Player).Name, Properties.Resources.PlayerBlue},
-                {typeof(Data.Entities.FriendlyLaserShot).Name, Properties.Resources.ShotBlue},
-                {typeof(Data.Entities.EnemyLaserShot).Name, Properties.Resources.ShotRed}
-            };
-            
-            var common = new Dictionary<string, Bitmap>
-            {
-            };
-
-            var name = entity.GetType().Name;
-            if (sideIsBottom && bottomIsRed || !sideIsBottom && !bottomIsRed)
-            {
-                if (red.TryGetValue(name, out var redSprite))
-                    return redSprite;
-            }
-            else
-            {
-                if (blue.TryGetValue(name, out var blueSprite))
-                    return blueSprite;
-            }
-            if (common.TryGetValue(name, out var sprite))
-                return sprite;
-
-            throw new ArgumentException($"Unknown entity {entity}");
         }
     }
 }

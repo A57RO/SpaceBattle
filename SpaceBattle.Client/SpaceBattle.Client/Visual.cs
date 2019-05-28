@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using SpaceBattle.Data;
+using SpaceBattle.Data.Entities;
 
 namespace SpaceBattle.Client
 {
@@ -32,7 +33,7 @@ namespace SpaceBattle.Client
         {
         };
 
-        private static Bitmap GetFlippedImage(Bitmap sprite)
+        public static Bitmap GetFlippedImage(Bitmap sprite)
         {
             var clone = sprite.Clone() as Bitmap;
             clone.RotateFlip(RotateFlipType.RotateNoneFlipY);
@@ -64,28 +65,30 @@ namespace SpaceBattle.Client
 
         public static void UpdateDrawingElements(
             Dictionary<Bitmap, HashSet<Point>> drawingElements,
-            List<EntityAnimation> animations,
+            GameState state,
             bool isBottom,
             bool isRed,
-            int mapWidth,
-            int mapHeight,
-            int tick)
+            int tick,
+            out Point playerDrawingPosition)
         {
             drawingElements.Clear();
-            foreach (var animation in animations)
+            playerDrawingPosition = Point.Empty;
+            foreach (var animation in state.Animations)
             {
                 var sprite = GetSpriteForEntity(animation.Entity, isBottom, isRed);
                 var drawingPosition = isBottom ? 
                     GetShiftedCoordinates(
-                    new Point(animation.BeginActLocation.X, animation.BeginActLocation.Y + mapHeight),
+                    new Point(animation.BeginActLocation.X, animation.BeginActLocation.Y + state.MapHeight),
                     animation.Action.DeltaX, animation.Action.DeltaY, tick) :
                 GetShiftedCoordinatesForTopSide(
                     animation.BeginActLocation,
-                    mapWidth,
-                    mapHeight,
+                    state.MapWidth,
+                    state.MapHeight,
                     animation.Action.DeltaX,
                     animation.Action.DeltaY,
                     tick);
+                if (animation.Entity is Player)
+                    playerDrawingPosition = drawingPosition;
                 if (drawingElements.TryGetValue(sprite, out var points))
                     points.Add(drawingPosition);
                 else

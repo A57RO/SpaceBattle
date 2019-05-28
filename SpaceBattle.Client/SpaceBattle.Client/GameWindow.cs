@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using SpaceBattle.Data;
 using SpaceBattle.Data.ClientInteraction;
@@ -18,15 +13,17 @@ namespace SpaceBattle.Client
         private readonly ControlSettings controlSettings;
         private readonly bool bottomIsRed;
         private readonly GameState topSideState;
-        private readonly GameState bottomState;
+        private readonly GameState bottomSideState;
         private readonly Dictionary<Bitmap, HashSet<Point>> topSideDrawingElements;
         private readonly Dictionary<Bitmap, HashSet<Point>> bottomSideDrawingElements;
+        private Point topSidePlayerDrawingPosition;
+        private Point bottomSidePlayerDrawingPosition;
         private int tickCount = 0;
 
         public GameWindow(ControlSettings controlSettings, int mapHeight, int mapWidth)
         {
             this.controlSettings = controlSettings;
-            bottomState = new GameState(mapHeight, mapWidth);
+            bottomSideState = new GameState(mapHeight, mapWidth);
             topSideState = new GameState(mapHeight, mapWidth);
             topSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
             bottomSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
@@ -36,8 +33,8 @@ namespace SpaceBattle.Client
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             ClientSize = new Size(
-                Visual.ElementSize * bottomState.MapWidth,
-                Visual.ElementSize * (bottomState.MapHeight + topSideState.MapHeight));
+                Visual.ElementSize * bottomSideState.MapWidth,
+                Visual.ElementSize * (bottomSideState.MapHeight + topSideState.MapHeight));
             StartPosition = FormStartPosition.Manual;
             Location = new Point(0, 0);
             BackColor = Color.Black;
@@ -51,34 +48,36 @@ namespace SpaceBattle.Client
         {
             if (tickCount == 0)
             {
-                bottomState.GiveCommandsFromClient(new GameActCommands(controlSettings, pressedKeys));
+                bottomSideState.GiveCommandsFromClient(new GameActCommands(controlSettings, pressedKeys));
                 //bottomSide.GiveClientCommands(new GameActCommands(controlSettings, new HashSet<Keys>() {Keys.W}));
-                GameEngine.BeginAct(bottomState);
+                GameEngine.BeginAct(bottomSideState);
                 GameEngine.BeginAct(topSideState);
+                if (!bottomSideState.GameOver)
+                    Sound.PlaySoundsAtBeginAct(bottomSideState.PlayerEntity);
             }
 
             Visual.UpdateDrawingElements(
                 bottomSideDrawingElements,
-                bottomState.Animations,
+                bottomSideState,
                 true,
                 bottomIsRed,
-                bottomState.MapWidth,
-                bottomState.MapHeight,
-                tickCount);
+                tickCount,
+                out bottomSidePlayerDrawingPosition);
 
             Visual.UpdateDrawingElements(
                 topSideDrawingElements,
-                topSideState.Animations,
+                topSideState,
                 false,
                 !bottomIsRed,
-                topSideState.MapWidth,
-                topSideState.MapHeight,
-                tickCount);
+                tickCount,
+                out topSidePlayerDrawingPosition);
 
             tickCount++;
             if (tickCount == 9)
             {
-                GameEngine.EndAct(bottomState, topSideState);
+                GameEngine.EndAct(bottomSideState, topSideState);
+                if (!bottomSideState.GameOver)
+                    Sound.PlaySoundsAtEndAct(bottomSideState.PlayerEntity);
                 tickCount = 0;
             }
 
@@ -108,9 +107,16 @@ namespace SpaceBattle.Client
             foreach (var element in topSideDrawingElements)
             foreach (var point in element.Value)
                 e.Graphics.DrawImage(element.Key, point);
+
+            if (topSideState.PlayerEntity != null && topSideState.PlayerEntity.ShieldStrength > 0)
+                e.Graphics.DrawImage(Visual.GetFlippedImage(Properties.Resources.Shield), topSidePlayerDrawingPosition);
+
             foreach (var element in bottomSideDrawingElements)
             foreach (var point in element.Value)
                 e.Graphics.DrawImage(element.Key, point);
+
+            if (bottomSideState.PlayerEntity != null && bottomSideState.PlayerEntity.ShieldStrength > 0)
+                e.Graphics.DrawImage(Properties.Resources.Shield, bottomSidePlayerDrawingPosition);
             //e.Graphics.ResetTransform();
         }
     }

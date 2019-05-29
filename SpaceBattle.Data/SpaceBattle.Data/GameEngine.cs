@@ -40,6 +40,7 @@ namespace SpaceBattle.Data
             {
                 var entity = entityWithPosition.Key;
                 var position = entityWithPosition.Value;
+                if (!state.IsInsideGameField(position)) continue;
                 //Начало акта для создаваемой сущности
                 var action = entity.Act(state, position);
                 state.Animations.Add(new EntityAnimation(entity, action, position));

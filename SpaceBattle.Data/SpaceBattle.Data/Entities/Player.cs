@@ -76,11 +76,15 @@ namespace SpaceBattle.Data.Entities
             else
             {
                 ShieldStrength = 0;
-                if (systemCommand == ClientCommand.OpenFire && Energy >= 10)
+                if (systemCommand == ClientCommand.OpenFire && Energy >= fireCost)
                 {
-                    action.Spawn.Add(new FriendlyLaserShot(), new Location(location.Y - 1, location.X));
-                    Energy -= fireCost;
-                    WeaponsFiring = true;
+                    var spawnLocation = new Location(location.Y - 1, location.X);
+                    if (state.IsInsideGameField(spawnLocation))
+                    {
+                        action.Spawn.Add(new FriendlyLaserShot(), spawnLocation);
+                        Energy -= fireCost;
+                        WeaponsFiring = true;
+                    }
                 }
             }
 

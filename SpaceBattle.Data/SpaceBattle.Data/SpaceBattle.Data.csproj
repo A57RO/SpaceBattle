@@ -58,6 +58,9 @@
     <Compile Include="IMortal.cs" />
     <Compile Include="IWeapon.cs" />
     <Compile Include="Location.cs" />
+    <Compile Include="Network\ClientHello.cs" />
+    <Compile Include="Network\HelloPacket.cs" />
+    <Compile Include="Network\ServerHello.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

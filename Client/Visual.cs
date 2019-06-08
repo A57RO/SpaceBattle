@@ -11,6 +11,7 @@ namespace Client
     {
         public const int ElementSize = 32;
         public const int IconSize = ElementSize / 2;
+        public const string FontName = "Eras Bold ITC";
 
         private static readonly Dictionary<Type, Bitmap> RedSprites = new Dictionary<Type, Bitmap>
         {

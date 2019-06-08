@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Client.Forms;
 using GameData.ClientInteraction;
 
 namespace Client
@@ -14,11 +15,7 @@ namespace Client
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(
-                new GameWindow(
-                    new ControlSettings(Keys.ControlKey, Keys.ShiftKey, Keys.Right, Keys.Left, Keys.Up, Keys.Down),
-                    10,
-                    11));
+            Application.Run(new MainMenuForm());
         }
     }
 }

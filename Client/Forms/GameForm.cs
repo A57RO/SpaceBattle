@@ -6,9 +6,9 @@ using GameData;
 using GameData.ClientInteraction;
 using GameData.Entities;
 
-namespace Client
+namespace Client.Forms
 {
-    public class GameWindow : Form
+    public sealed class GameForm : Form
     {
         private readonly HashSet<Keys> pressedKeys = new HashSet<Keys>();
         private readonly ControlSettings controlSettings;
@@ -21,30 +21,38 @@ namespace Client
         private Point bottomSidePlayerDrawingPosition;
         private int tickCount = 0;
 
-        public GameWindow(ControlSettings controlSettings, int mapHeight, int mapWidth)
+        public GameForm(ControlSettings controlSettings, bool playerIsRed, int mapWidth, int bottomMapHeight, int topSideMapHeight)
         {
+            Visible = false;
+            MaximizeBox = false;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            StartPosition = FormStartPosition.Manual;
+            Location = new Point(0, 0);
+            BackColor = Color.Black;
+            ClientSize = new Size(
+                Visual.ElementSize * mapWidth,
+                Visual.ElementSize * (bottomMapHeight + topSideMapHeight + 2));
+            //Size = ClientSize;
+            BackgroundImageLayout = ImageLayout.Center;
+            BackgroundImage = Properties.Resources.BackgroundGame;
+
+            bottomIsRed = playerIsRed;
+            bottomSideState = new GameState(bottomMapHeight, mapWidth);
+            topSideState = new GameState(topSideMapHeight, mapWidth);
+
             this.controlSettings = controlSettings;
-            bottomSideState = new GameState(mapHeight, mapWidth);
-            topSideState = new GameState(mapHeight, mapWidth);
             topSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
             bottomSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
             //TODO
             bottomIsRed = true;
 
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            ClientSize = new Size(
-                Visual.ElementSize * bottomSideState.MapWidth,
-                Visual.ElementSize * (bottomSideState.MapHeight + topSideState.MapHeight + 2));
-            //Size = ClientSize;
-            StartPosition = FormStartPosition.Manual;
-            Location = new Point(0, 0);
-            BackColor = Color.Black;
             var timer = new Timer { Interval = 10 };
             timer.Tick += OnTick;
             timer.Start();
             //InitializeComponent();
         }
+        public GameForm(ControlSettings controlSettings, bool playerIsRed, int mapWidth, int mapHeight) : 
+            this(controlSettings, playerIsRed, mapWidth, mapHeight, mapHeight) { }
 
         private void OnTick(object sender, EventArgs e)
         {
@@ -193,7 +201,7 @@ namespace Client
             var numberX = beginX;
             if (!toRight)
                 numberX -= stringValue.Length*9 - 2;
-            e.Graphics.DrawString(stringValue, new Font("Eras Bold ITC", 10), Brushes.White, numberX, beginY);
+            e.Graphics.DrawString(stringValue, new Font(Visual.FontName, 10), Brushes.White, numberX, beginY);
         }
     }
 }

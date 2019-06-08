@@ -52,7 +52,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GameWindow.cs">
+    <Compile Include="Forms\GameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MainMenuForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Program.cs" />
@@ -159,6 +162,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icon.ico" />
+    <None Include="Properties\Sprites\BackgroundGame.jpg" />
+    <None Include="Properties\Sprites\GameBackground.jpg" />
+    <None Include="Properties\Sprites\BackgroundMainMenu.jpg" />
+    <None Include="Properties\Sprites\Background5.jpg" />
+    <None Include="Properties\Sprites\Background4.jpg" />
+    <None Include="Properties\Sprites\Background2.jpg" />
+    <None Include="Properties\Sprites\Background1.jpg" />
+    <None Include="Properties\Sprites\Background.jpg" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameData\GameData.csproj">
@@ -166,5 +177,6 @@
       <Name>GameData</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

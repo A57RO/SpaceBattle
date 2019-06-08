@@ -10,6 +10,7 @@ namespace SpaceBattle.Client
     public static class Visual
     {
         public const int ElementSize = 32;
+        public const int IconSize = ElementSize / 2;
 
         private static readonly Dictionary<Type, Bitmap> RedSprites = new Dictionary<Type, Bitmap>
         {
@@ -116,7 +117,7 @@ namespace SpaceBattle.Client
             var yShift = tick * 4 * deltaY;
             return new Point(
                 coordinates.X * ElementSize + xShift,
-                coordinates.Y * ElementSize + yShift);
+                (coordinates.Y  + 1) * ElementSize + yShift);
 
         }
 

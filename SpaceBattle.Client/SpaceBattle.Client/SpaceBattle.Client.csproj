@@ -72,18 +72,18 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Sound.cs" />
     <Compile Include="Visual.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -96,45 +96,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\PlayerBlue.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\PlayerRed.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\ShotBlue.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\ShotRed.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidLargeCarbon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidLargeMagma.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidLargeStone.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidMediumCarbon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidMediumMagma.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidMediumStone.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidSmallCarbon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidSmallMagma.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\Sprites\AsteroidSmallStone.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\Sounds\Explode.wav" />
@@ -153,9 +114,26 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icon.ico" />
-    <None Include="Properties\Sprites\Shield.png" />
-    <None Include="Properties\Sprites\PlayerShieldedRed.png" />
-    <None Include="Properties\Sprites\PlayerShieldedBlue.png" />
+    <None Include="Properties\Sprites\16\HUDShield.png" />
+    <None Include="Properties\Sprites\16\HUDHealthDamage.png" />
+    <None Include="Properties\Sprites\16\HUDHealth.png" />
+    <None Include="Properties\Sprites\16\HUDEnergyDamage.png" />
+    <None Include="Properties\Sprites\16\HUDEnergy.png" />
+    <None Include="Properties\Sprites\16\HUDArmor.png" />
+    <None Include="Properties\Sprites\32\ShotRed.png" />
+    <None Include="Properties\Sprites\32\ShotBlue.png" />
+    <None Include="Properties\Sprites\32\Shield.png" />
+    <None Include="Properties\Sprites\32\PlayerRed.png" />
+    <None Include="Properties\Sprites\32\PlayerBlue.png" />
+    <None Include="Properties\Sprites\32\AsteroidSmallStone.png" />
+    <None Include="Properties\Sprites\32\AsteroidSmallMagma.png" />
+    <None Include="Properties\Sprites\32\AsteroidSmallCarbon.png" />
+    <None Include="Properties\Sprites\32\AsteroidMediumStone.png" />
+    <None Include="Properties\Sprites\32\AsteroidMediumMagma.png" />
+    <None Include="Properties\Sprites\32\AsteroidMediumCarbon.png" />
+    <None Include="Properties\Sprites\32\AsteroidLargeStone.png" />
+    <None Include="Properties\Sprites\32\AsteroidLargeMagma.png" />
+    <None Include="Properties\Sprites\32\AsteroidLargeCarbon.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.1">

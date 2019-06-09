@@ -43,8 +43,6 @@ namespace Client.Forms
             this.controlSettings = controlSettings;
             topSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
             bottomSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
-            //TODO
-            bottomIsRed = true;
 
             var timer = new Timer { Interval = 10 };
             timer.Tick += OnTick;

@@ -49,6 +49,7 @@ namespace Client.Forms
             {
                 var gameForm = new GameForm(
                     new ControlSettings(Keys.ControlKey, Keys.ShiftKey, Keys.Right, Keys.Left, Keys.Up, Keys.Down),
+                    isRed,
                     11,
                     10);
                 Visible = false;

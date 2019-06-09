@@ -2,26 +2,20 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using GameData;
-using GameData.ClientInteraction;
-using GameData.Entities;
 
 namespace Client.Forms
 {
     public sealed class GameForm : Form
     {
-        private readonly HashSet<Keys> pressedKeys = new HashSet<Keys>();
-        private readonly ControlSettings controlSettings;
-        private readonly bool bottomIsRed;
-        private readonly GameState topSideState;
-        private readonly GameState bottomSideState;
-        private readonly Dictionary<Bitmap, HashSet<Point>> topSideDrawingElements;
-        private readonly Dictionary<Bitmap, HashSet<Point>> bottomSideDrawingElements;
-        private Point topSidePlayerDrawingPosition;
-        private Point bottomSidePlayerDrawingPosition;
-        private int tickCount = 0;
+        public readonly HashSet<Keys> PressedKeys = new HashSet<Keys>();
+        public readonly bool BottomIsRed;
 
-        public GameForm(ControlSettings controlSettings, bool playerIsRed, int mapWidth, int bottomMapHeight, int topSideMapHeight)
+        public DrawingElements TopSideHUD;
+        public DrawingElements TopSideField;
+        public DrawingElements BottomSideHUD;
+        public DrawingElements BottomSideField;
+
+        public GameForm(bool playerIsRed, int mapWidth, int mapHeight)
         {
             Visible = false;
             MaximizeBox = false;
@@ -29,67 +23,17 @@ namespace Client.Forms
             StartPosition = FormStartPosition.Manual;
             Location = new Point(0, 0);
             BackColor = Color.Black;
-            ClientSize = new Size(
-                Visual.ElementSize * mapWidth,
-                Visual.ElementSize * (bottomMapHeight + topSideMapHeight + 2));
+            ClientSize = new Size(Visual.ElementSize * mapWidth, Visual.ElementSize * (mapHeight + 2));
             //Size = ClientSize;
             BackgroundImageLayout = ImageLayout.Center;
             BackgroundImage = Properties.Resources.BackgroundGame;
 
-            bottomIsRed = playerIsRed;
-            bottomSideState = new GameState(bottomMapHeight, mapWidth);
-            topSideState = new GameState(topSideMapHeight, mapWidth);
+            BottomIsRed = playerIsRed;
 
-            this.controlSettings = controlSettings;
-            topSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
-            bottomSideDrawingElements = new Dictionary<Bitmap, HashSet<Point>>();
-
-            var timer = new Timer { Interval = 10 };
-            timer.Tick += OnTick;
-            timer.Start();
-            //InitializeComponent();
-        }
-        public GameForm(ControlSettings controlSettings, bool playerIsRed, int mapWidth, int mapHeight) : 
-            this(controlSettings, playerIsRed, mapWidth, mapHeight, mapHeight) { }
-
-        private void OnTick(object sender, EventArgs e)
-        {
-            if (tickCount == 0)
-            {
-                bottomSideState.GiveCommandsFromClient(new GameActCommands(controlSettings, pressedKeys));
-                //bottomSideState.GiveClientCommands(new GameActCommands(controlSettings, new HashSet<Keys>() {Keys.W}));
-                GameEngine.BeginAct(bottomSideState);
-                GameEngine.BeginAct(topSideState);
-                if (!bottomSideState.GameOver)
-                    Sound.PlaySoundsAtBeginAct(bottomSideState.PlayerEntity);
-            }
-
-            Visual.UpdateDrawingElements(
-                bottomSideDrawingElements,
-                bottomSideState,
-                true,
-                bottomIsRed,
-                tickCount,
-                out bottomSidePlayerDrawingPosition);
-
-            Visual.UpdateDrawingElements(
-                topSideDrawingElements,
-                topSideState,
-                false,
-                !bottomIsRed,
-                tickCount,
-                out topSidePlayerDrawingPosition);
-
-            tickCount++;
-            if (tickCount == 9)
-            {
-                GameEngine.EndAct(bottomSideState, topSideState);
-                if (!bottomSideState.GameOver)
-                    Sound.PlaySoundsAtEndAct(bottomSideState.PlayerEntity);
-                tickCount = 0;
-            }
-
-            Invalidate();
+            TopSideHUD = new DrawingElements();
+            TopSideField = new DrawingElements();
+            BottomSideHUD = new DrawingElements();
+            BottomSideField = new DrawingElements();
         }
 
         protected override void OnLoad(EventArgs e)
@@ -101,105 +45,34 @@ namespace Client.Forms
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            pressedKeys.Add(e.KeyCode);
+            PressedKeys.Add(e.KeyCode);
         }
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
-            pressedKeys.Remove(e.KeyCode);
+            PressedKeys.Remove(e.KeyCode);
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            //e.Graphics.TranslateTransform(0, elementSize);
-            foreach (var element in topSideDrawingElements)
+            DrawElements(e, BottomSideField);
+            DrawElements(e, BottomSideHUD);
+            DrawElements(e, TopSideField);
+            DrawElements(e, TopSideHUD);
+        }
+
+        private void DrawElements(PaintEventArgs e, DrawingElements elements)
+        {
+            foreach (var element in elements.Images)
             foreach (var point in element.Value)
                 e.Graphics.DrawImage(element.Key, point);
 
-            if (topSideState.PlayerEntity != null)
-            {
-                DrawPlayerHUD(e, topSideState.PlayerEntity, false);
-                if (topSideState.PlayerEntity.ShieldStrength > 0)
-                    e.Graphics.DrawImage(Visual.GetFlippedImage(Properties.Resources.Shield),
-                        topSidePlayerDrawingPosition);
-            }
+            foreach (var drawingRectangle in elements.Rectangles)
+                e.Graphics.FillRectangle(drawingRectangle.Value, drawingRectangle.Key);
 
-            foreach (var element in bottomSideDrawingElements)
-            foreach (var point in element.Value)
-                e.Graphics.DrawImage(element.Key, point);
-
-            if (bottomSideState.PlayerEntity != null)
-            {
-                DrawPlayerHUD(e, bottomSideState.PlayerEntity, true);
-                if (bottomSideState.PlayerEntity.ShieldStrength > 0)
-                    e.Graphics.DrawImage(Properties.Resources.Shield, bottomSidePlayerDrawingPosition);
-            }
-
-            //e.Graphics.ResetTransform();
-        }
-
-        private void DrawPlayerHUD(PaintEventArgs e, Player player, bool isBottom)
-        {
-            var middleX = ClientSize.Width / 2;
-            int numericY;
-            int scaledY;
-            if (isBottom)
-            {
-                numericY = ClientSize.Height - Visual.ElementSize;
-                scaledY = numericY + Visual.IconSize;
-            }
-            else
-            {
-                numericY = Visual.IconSize;
-                scaledY = 0;
-            }
-            DrawHUDIcons(e, middleX, numericY, scaledY);
-
-            DrawHUDNumber(e, Visual.IconSize, numericY, true, player.Armor.ToString());
-            DrawHUDNumber(e, ClientSize.Width - Visual.ElementSize, numericY, false, $"{(int)(player.ShieldStrength * 100)}%");
-
-            var rectangleSize = new Size(middleX / 20 - 1, Visual.IconSize);
-
-            var leftX = middleX - Visual.IconSize - rectangleSize.Width;
-            DrawHUDNumber(e, leftX, numericY, false, 10.ToString());//TODO: Вынести урон в public поле
-            DrawHUDBar(e, leftX, scaledY, rectangleSize, Brushes.DarkRed, false, player.Health);
-            DrawHUDNumber(e, leftX, scaledY, false, player.Health.ToString());
-
-            var rightX = middleX + Visual.IconSize;
-            DrawHUDNumber(e, rightX, numericY, true, 25.ToString());
-            DrawHUDBar(e, rightX, scaledY, rectangleSize, Brushes.Indigo, true, player.Energy);
-            DrawHUDNumber(e, rightX, scaledY, true, player.Energy.ToString());
-        }
-
-        private void DrawHUDIcons(PaintEventArgs e, int middleX, int numericY, int scaledY)
-        {
-            e.Graphics.DrawImage(Properties.Resources.HUDArmor, 0, numericY);
-            e.Graphics.DrawImage(Properties.Resources.HUDShield, ClientSize.Width - Visual.IconSize, numericY);
-            e.Graphics.DrawImage(Properties.Resources.HUDHealthDamage, middleX - Visual.IconSize, numericY);
-            e.Graphics.DrawImage(Properties.Resources.HUDEnergyDamage, middleX, numericY);
-            e.Graphics.DrawImage(Properties.Resources.HUDHealth, middleX - Visual.IconSize, scaledY);
-            e.Graphics.DrawImage(Properties.Resources.HUDEnergy, middleX, scaledY);
-        }
-        
-        private static void DrawHUDBar(PaintEventArgs e, int beginX, int beginY, Size rectangleSize, Brush brush, bool toRight, int value)
-        {
-            var deltaX = rectangleSize.Width + 1;
-            if (!toRight)
-                deltaX = -deltaX;
-
-            for (int i = 0; i < value / 5; i++)
-            {
-                var rectangle = new Rectangle(beginX + i * deltaX, beginY, rectangleSize.Width, rectangleSize.Height);
-                e.Graphics.FillRectangle(brush, rectangle);
-            }
-        }
-
-        private static void DrawHUDNumber(PaintEventArgs e, int beginX, int beginY, bool toRight, string stringValue)
-        {
-            var numberX = beginX;
-            if (!toRight)
-                numberX -= stringValue.Length*9 - 2;
-            e.Graphics.DrawString(stringValue, new Font(Visual.FontName, 10), Brushes.White, numberX, beginY);
+            foreach (var drawingString in elements.Strings)
+            foreach (var point in drawingString.Value)
+                e.Graphics.DrawString(drawingString.Key, Visual.NumbersFont, Brushes.White, point);
         }
     }
 }

@@ -58,9 +58,11 @@
     <Compile Include="IMortal.cs" />
     <Compile Include="IWeapon.cs" />
     <Compile Include="Location.cs" />
-    <Compile Include="Network\ClientHello.cs" />
-    <Compile Include="Network\HelloPacket.cs" />
-    <Compile Include="Network\ServerHello.cs" />
+    <Compile Include="Packets\ClientHello.cs" />
+    <Compile Include="Packets\ClientUpdatePacket.cs" />
+    <Compile Include="Packets\HelloPacket.cs" />
+    <Compile Include="Packets\ServerHello.cs" />
+    <Compile Include="Packets\ServerUpdatePacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

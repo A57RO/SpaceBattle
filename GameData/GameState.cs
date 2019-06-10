@@ -26,7 +26,7 @@ namespace GameData
         /// </summary>
         public bool GameOver { get; private set; }
         
-        public GameState(int mapHeight, int mapWidth)
+        public GameState(int mapHeight = 10, int mapWidth = 11)
         {
             if (mapHeight < 2 || mapWidth < 3)
                 throw new ArgumentException("Map is too small");

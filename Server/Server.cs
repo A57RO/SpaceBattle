@@ -1,13 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Server;
 
 namespace SpaceBattle.Server
 {
     class Server
     {
         TcpListener Listener;
+        private static List<Game> Games = new List<Game>();
 
         public Server(int Port)
         {
@@ -17,7 +20,13 @@ namespace SpaceBattle.Server
  
         static void ClientThread(Object stateInfo)
         {
-            new GameClient((TcpClient)stateInfo);
+            foreach (var game in Games)
+            {
+                if (!game.IsReady)
+                    game.AddPlayer(new PlayerGame((TcpClient)stateInfo));
+                return;
+            }
+            Games.Add(new Game(new PlayerGame((TcpClient)stateInfo)));
         }
 
         public void Listen()
@@ -28,7 +37,7 @@ namespace SpaceBattle.Server
             Console.WriteLine("===============");
             while (true)
             {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(ClientThread), Listener.AcceptTcpClient());
+                ClientThread(Listener.AcceptTcpClient());
             }
         }
 

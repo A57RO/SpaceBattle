@@ -11,7 +11,7 @@ namespace Server
         public static void Main(string[] args)
         {
             Console.Title = "Server";
-            var server = new SpaceBattle.Server.Server(8888);
+            var server = new SpaceBattle.Server.Server(1997);
             server.Listen();
         }
     }

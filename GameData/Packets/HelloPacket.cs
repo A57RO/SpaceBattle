@@ -1,4 +1,4 @@
-﻿namespace GameData.Network
+﻿namespace GameData.Packets
 {
     public abstract class HelloPacket
     {

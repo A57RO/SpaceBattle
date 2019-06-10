@@ -4,11 +4,11 @@ using GameData.ClientInteraction;
 namespace GameData.Packets
 {
     [Serializable]
-    public class ClientUpdatePacket
+    public class ClientUpdate
     {
         public readonly GameActCommands Commands;
 
-        public ClientUpdatePacket(GameActCommands commands)
+        public ClientUpdate(GameActCommands commands)
         {
             Commands = commands;
         }

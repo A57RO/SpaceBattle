@@ -59,10 +59,11 @@
     <Compile Include="IWeapon.cs" />
     <Compile Include="Location.cs" />
     <Compile Include="Packets\ClientHello.cs" />
-    <Compile Include="Packets\ClientUpdatePacket.cs" />
+    <Compile Include="Packets\ClientUpdate.cs" />
     <Compile Include="Packets\ServerHello.cs" />
-    <Compile Include="Packets\ServerUpdatePacket.cs" />
+    <Compile Include="Packets\ServerUpdate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serializer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

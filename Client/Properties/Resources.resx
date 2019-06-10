@@ -118,33 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="AsteroidLargeCarbon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidLargeCarbon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AsteroidLargeMagma" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidLargeMagma.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AsteroidLargeStone" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidLargeStone.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AsteroidMediumCarbon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidMediumCarbon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AsteroidMediumMagma" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidMediumMagma.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AsteroidMediumStone" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidMediumStone.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AsteroidSmallCarbon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidSmallCarbon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AsteroidSmallMagma" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidSmallMagma.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="AsteroidSmallStone" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Sprites\32\AsteroidSmallStone.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Explode" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Sounds\Explode.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

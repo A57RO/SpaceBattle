@@ -1,5 +1,8 @@
-﻿namespace GameData
+﻿using System;
+
+namespace GameData
 {
+    [Serializable]
     public class EntityAnimation
     {
         public readonly IEntity Entity;

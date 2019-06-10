@@ -4,9 +4,7 @@ using System.Windows.Forms;
 
 namespace GameData.ClientInteraction
 {
-    /// <summary>
-    /// Клиент передаёт этот класс на сервер в начале акта
-    /// </summary>
+    [Serializable]
     public class GameActCommands
     {
         public readonly ClientCommand Systems;

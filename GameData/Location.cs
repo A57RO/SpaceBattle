@@ -1,5 +1,8 @@
-﻿namespace GameData
+﻿using System;
+
+namespace GameData
 {
+    [Serializable]
     public struct Location
     {
         public readonly int Y;

@@ -2,6 +2,7 @@
 
 namespace GameData.Entities
 {
+    [Serializable]
     public abstract class Shot : IWeapon
     {
         public int PhysicalDamage { get; protected set; }

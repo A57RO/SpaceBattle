@@ -1,5 +1,8 @@
-﻿namespace GameData.Entities
+﻿using System;
+
+namespace GameData.Entities
 {
+    [Serializable]
     public class FriendlyLaserShot : Shot
     {
         private static EntityAction FriendlyLaserShotAct(GameState state, Location location)

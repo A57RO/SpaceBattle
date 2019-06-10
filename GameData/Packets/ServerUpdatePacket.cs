@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GameData.Packets
 {
+    [Serializable]
     public class ServerUpdatePacket
     {
         public readonly bool SideColorIsRed;

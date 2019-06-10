@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GameData
 {
+    [Serializable]
     public class EntityAction
     {
         public int DeltaX;

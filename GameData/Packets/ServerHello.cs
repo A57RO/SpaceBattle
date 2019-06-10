@@ -1,11 +1,17 @@
-﻿namespace GameData.Packets
-{
-    public class ServerHello : HelloPacket
-    {
-        public string EnemyName => Name;
+﻿using System;
 
-        public ServerHello(string enemyName, bool colorIsRed) : base(enemyName, colorIsRed)
+namespace GameData.Packets
+{
+    [Serializable]
+    public class ServerHello
+    {
+        public readonly bool ColorIsRed;
+        public readonly string EnemyName;
+
+        public ServerHello(bool colorIsRed, string enemyName)
         {
+            ColorIsRed = colorIsRed;
+            EnemyName = enemyName;
         }
     }
 }

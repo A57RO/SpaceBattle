@@ -1,7 +1,9 @@
-﻿using GameData.ClientInteraction;
+﻿using System;
+using GameData.ClientInteraction;
 
 namespace GameData.Entities
 {
+    [Serializable]
     public class Player : IMortal
     {
         private readonly int maxHeath;

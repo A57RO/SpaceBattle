@@ -1,5 +1,8 @@
-﻿namespace GameData.ClientInteraction
+﻿using System;
+
+namespace GameData.ClientInteraction
 {
+    [Serializable]
     public enum ClientCommand : byte
     {
         Idle = 0,

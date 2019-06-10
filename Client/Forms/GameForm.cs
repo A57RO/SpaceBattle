@@ -8,27 +8,23 @@ namespace Client.Forms
     public sealed class GameForm : Form
     {
         public readonly HashSet<Keys> PressedKeys = new HashSet<Keys>();
-        public readonly bool BottomIsRed;
 
         public DrawingElements TopSideHUD;
         public DrawingElements TopSideField;
         public DrawingElements BottomSideHUD;
         public DrawingElements BottomSideField;
 
-        public GameForm(bool playerIsRed, int mapWidth, int mapHeight)
+        public GameForm(int mapWidth, int mapHeight)
         {
             Visible = false;
             MaximizeBox = false;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.Manual;
-            Location = new Point(0, 0);
             BackColor = Color.Black;
             ClientSize = new Size(Visual.ElementSize * mapWidth, Visual.ElementSize * (mapHeight + 2));
             //Size = ClientSize;
             BackgroundImageLayout = ImageLayout.Center;
             BackgroundImage = Properties.Resources.BackgroundGame;
-
-            BottomIsRed = playerIsRed;
 
             TopSideHUD = new DrawingElements();
             TopSideField = new DrawingElements();
@@ -39,7 +35,11 @@ namespace Client.Forms
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            Text = @"Space Battle";
+            if (Owner != null)
+            {
+                Text = Owner.Text + Text;
+                Location = Owner.Location;
+            }
             DoubleBuffered = true;
         }
 
@@ -55,10 +55,14 @@ namespace Client.Forms
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            DrawElements(e, BottomSideField);
-            DrawElements(e, BottomSideHUD);
-            DrawElements(e, TopSideField);
-            DrawElements(e, TopSideHUD);
+            lock (BottomSideField)
+                DrawElements(e, BottomSideField);
+            lock (BottomSideHUD)
+                DrawElements(e, BottomSideHUD);
+            lock (TopSideField)
+                DrawElements(e, TopSideField);
+            lock (TopSideHUD)
+                DrawElements(e, TopSideHUD);
         }
 
         private void DrawElements(PaintEventArgs e, DrawingElements elements)
@@ -72,7 +76,7 @@ namespace Client.Forms
 
             foreach (var drawingString in elements.Strings)
                 foreach (var point in drawingString.Value)
-                    e.Graphics.DrawString(drawingString.Key, Visual.NumbersFont, Brushes.White, point);
+                    e.Graphics.DrawString(drawingString.Key, Visual.HUDNumbersFont, Brushes.White, point);
         }
     }
 }

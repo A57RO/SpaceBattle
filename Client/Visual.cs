@@ -12,7 +12,8 @@ namespace Client
         public const int ElementSize = 32;
         public const int IconSize = ElementSize / 2;
         public const string FontName = "Eras Bold ITC";
-        public static readonly Font NumbersFont = new Font(FontName, 10);
+        public static readonly Font HUDNumbersFont = new Font(FontName, 10);
+        public static readonly Font ButtonsFont = new Font(FontName, 16);
 
         private static readonly Dictionary<Type, int> DrawingPriorities = new Dictionary<Type, int>
         {
@@ -54,15 +55,9 @@ namespace Client
             return sprites;
         }
 
-        public static void UpdateDrawingElements(DrawingElements elements, GameState state, bool isBottom, bool isRed, int tick)
+        public static void UpdateGameField(DrawingElements elements, GameState state, bool isBottom, bool isRed, int tick)
         {
-            IOrderedEnumerable<EntityAnimation> sortedAnimations = null;
-            lock (state.Animations)
-            {
-                sortedAnimations = state.Animations.OrderBy(a => DrawingPriorities[a.Entity.GetType()]);
-            }
-
-            foreach (var animation in sortedAnimations)
+            foreach (var animation in state.Animations.OrderBy(a => DrawingPriorities[a.Entity.GetType()]))
             {
                 var sprites = GetSpritesForEntity(animation.Entity, isBottom, isRed);
                 var drawingLocation = isBottom

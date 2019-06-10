@@ -37,7 +37,7 @@ namespace SpaceBattle.Server
             Console.WriteLine("===============");
             while (true)
             {
-                ClientThread(Listener.AcceptTcpClient());
+                ThreadPool.QueueUserWorkItem(new WaitCallback(ClientThread), Listener.AcceptTcpClient());
             }
         }
 

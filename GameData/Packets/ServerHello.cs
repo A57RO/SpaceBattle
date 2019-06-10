@@ -8,7 +8,7 @@ namespace GameData.Packets
         public readonly bool ColorIsRed;
         public readonly string EnemyName;
 
-        public ServerHello(bool colorIsRed, string enemyName)
+        public ServerHello(bool colorIsRed, string enemyName = null)
         {
             ColorIsRed = colorIsRed;
             EnemyName = enemyName;

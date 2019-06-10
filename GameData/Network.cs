@@ -5,17 +5,17 @@ using GameData.Packets;
 
 namespace GameData
 {
-    public class Network
+    public static class Network
     {
         public const int ServerPort = 1997;
 
-        public void SendPacket(IPacket packet, NetworkStream stream)
+        public static void SendPacket(IPacket packet, NetworkStream stream)
         {
             var serialized = Serializer.Serialize(packet);
             stream.Write(serialized, 0, serialized.Length);
         }
 
-        public IPacket ReceivePacket(NetworkStream stream)
+        public static IPacket ReceivePacket(NetworkStream stream)
         {
             var data = new List<byte>();
             var buffer = new byte[256];

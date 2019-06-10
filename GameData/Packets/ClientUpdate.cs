@@ -4,7 +4,7 @@ using GameData.ClientInteraction;
 namespace GameData.Packets
 {
     [Serializable]
-    public class ClientUpdate
+    public class ClientUpdate : IPacket
     {
         public readonly GameActCommands Commands;
 

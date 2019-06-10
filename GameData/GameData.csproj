@@ -54,12 +54,14 @@
     <Compile Include="EntityAnimation.cs" />
     <Compile Include="GameEngine.cs" />
     <Compile Include="GameState.cs" />
-    <Compile Include="IEntity.cs" />
-    <Compile Include="IMortal.cs" />
-    <Compile Include="IWeapon.cs" />
+    <Compile Include="Entities\IEntity.cs" />
+    <Compile Include="Entities\IMortal.cs" />
+    <Compile Include="Entities\IWeapon.cs" />
     <Compile Include="Location.cs" />
+    <Compile Include="Network.cs" />
     <Compile Include="Packets\ClientHello.cs" />
     <Compile Include="Packets\ClientUpdate.cs" />
+    <Compile Include="Packets\IPacket.cs" />
     <Compile Include="Packets\ServerHello.cs" />
     <Compile Include="Packets\ServerUpdate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

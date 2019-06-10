@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace GameData.Packets
 {
     [Serializable]
-    public class ServerUpdate
+    public class ServerUpdate : IPacket
     {
         public readonly bool SideColorIsRed;
         public readonly List<EntityAnimation> Animations;

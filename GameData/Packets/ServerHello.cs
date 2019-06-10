@@ -3,7 +3,7 @@
 namespace GameData.Packets
 {
     [Serializable]
-    public class ServerHello
+    public class ServerHello : IPacket
     {
         public readonly bool ColorIsRed;
         public readonly string EnemyName;

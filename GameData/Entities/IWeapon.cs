@@ -1,4 +1,4 @@
-﻿namespace GameData
+﻿namespace GameData.Entities
 {
     public interface IWeapon : IEntity
     {

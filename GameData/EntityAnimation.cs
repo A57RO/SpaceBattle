@@ -1,4 +1,5 @@
 ﻿using System;
+using GameData.Entities;
 
 namespace GameData
 {

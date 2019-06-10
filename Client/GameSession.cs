@@ -66,6 +66,7 @@ namespace Client
             gameInProcess = true;
             var timer = new System.Windows.Forms.Timer {Interval = 10};
             timer.Tick += OnTick;
+            Task.Run(() => StartListenServer());
             timer.Start();
         }
 

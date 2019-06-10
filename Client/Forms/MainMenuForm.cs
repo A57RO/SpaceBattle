@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Remoting.Channels;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using GameData;
 using GameData.ClientInteraction;
 using GameData.Packets;
 
@@ -11,79 +15,82 @@ namespace Client.Forms
 {
     public sealed class MainMenuForm : Form
     {
-        public MainMenuForm()
+        private readonly Button engageButton;
+        private readonly Label preferredSideLabel;
+        private readonly Button preferredSideButton;
+        private readonly Label nameLabel;
+        private readonly TextBox nameText;
+        private readonly Label serverIPLabel;
+        private readonly TextBox serverIPText;
+
+        private readonly Label connectingLabel;
+        private readonly Label statusLabel;
+        private readonly Button returnButton;
+
+        public MainMenuForm(bool playerIsRed, string playerName, ControlSettings controls)
         {
             MaximizeBox = false;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.Manual;
-            Location = new Point(0, 0);
+            Location = Point.Empty;
             BackColor = Color.Black;
             BackgroundImageLayout = ImageLayout.Center;
             BackgroundImage = Properties.Resources.BackgroundMainMenu;
-            ClientSize = new Size(200, 400);
+            ClientSize = new Size(200, 320);
 
-            var isRed = true;
+            engageButton = CreateButton(0, @"Engage");
+            preferredSideLabel = CreateLabel(engageButton.Bottom, @"Preferred side:");
+            preferredSideButton = CreateButton(preferredSideLabel.Bottom);
+            nameLabel = CreateLabel(preferredSideButton.Bottom, @"Name:");
+            nameText = CreateTextBox(nameLabel.Bottom, playerName);
+            serverIPLabel = CreateLabel(nameText.Bottom, @"Server IP:");
+            serverIPText = CreateTextBox(serverIPLabel.Bottom, @"127.0.0.1");
+            SetMainMenuVisible(true);
 
-            var engageButton = CreateButton(0, @"Engage");
-            var preferredSideLabel = CreateLabel(engageButton.Bottom, @"Preferred side:");
-            var preferredSideButton = CreateButton(preferredSideLabel.Bottom);
-            var nameLabel = CreateLabel(preferredSideButton.Bottom, @"Name:");
-            var nameText = CreateTextBox(nameLabel.Bottom, @"Player");
-            var serverIPLabel = CreateLabel(nameText.Bottom, @"Server IP:");
-            var serverIPText = CreateTextBox(serverIPLabel.Bottom, @"127.0.0.1");
+            connectingLabel = CreateLabel(0);
+            statusLabel = CreateLabel(connectingLabel.Bottom);
+            statusLabel.Size = new Size(statusLabel.Size.Width, 192);
+            SetConnectionScreenVisible(false);
+            returnButton = CreateButton(statusLabel.Bottom, @"Return to menu");
+            returnButton.Visible = false;
+
+            var gameSession = new GameSession(
+                11,
+                10,
+                10,
+                controls);
+
 
             engageButton.Click += (sender, args) =>
             {
+                SetMainMenuVisible(false);
+                SetConnectionScreenVisible(true);
 
-                var gameSession = new GameSession(
-                    new ControlSettings(Keys.ControlKey, Keys.ShiftKey, Keys.Right, Keys.Left, Keys.Up, Keys.Down),
-                    isRed,
-                    11,
-                    10,
-                    10);
-                Visible = false;
-                gameSession.GameForm.ShowDialog(this);
-
-                /*
-                var connectingLabel = CreateLabel(0);
-                var ipIsCorrect = IPAddress.TryParse(serverIPText.Text, out var ip);
-                connectingLabel.Text = ipIsCorrect ? $@"Connecting to {ip}" : @"Wrong IP";
-                Controls.Add(connectingLabel);
-
-                if (ipIsCorrect)
+                if (IPAddress.TryParse(serverIPText.Text, out var ip))
                 {
-                    
-                    var clientHello = new ClientHello(nameText.Text, isRed);
-                    var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    socket.Connect(ip, 1997);
-                    socket.Send(clientHello, 0, SocketFlags.None);
-                    socket.Receive()
-                    
-
+                    connectingLabel.Text = $@"Connecting to {ip}";
+                    Task.Run(() => TryConnect(new IPEndPoint(ip, Network.ServerPort), gameSession, playerIsRed));
                 }
                 else
                 {
-                    var returnButton = CreateButton(connectingLabel.Bottom, @"Return to menu");
-                    //TODO: возврат в главное меню
-                    //returnButton.Click += (sender, args) => { return; };.
-                    Controls.Add(returnButton);
+                    connectingLabel.Text = @"Wrong IP";
+                    returnButton.Visible = true;
                 }
-                */
-                nameLabel.Dispose();
-                nameText.Dispose();
-                preferredSideLabel.Dispose();
-                preferredSideButton.Dispose();
-                serverIPLabel.Dispose();
-                serverIPText.Dispose();
-                engageButton.Dispose();
-                Dispose();
             };
 
-            SetButtonColor(preferredSideButton, isRed);
+            SetButtonColor(preferredSideButton, playerIsRed);
             preferredSideButton.Click += (sender, args) =>
             {
-                isRed = !isRed;
-                SetButtonColor(preferredSideButton, isRed);
+                playerIsRed = !playerIsRed;
+                SetButtonColor(preferredSideButton, playerIsRed);
+            };
+
+            returnButton.Click += (sender1, args1) =>
+            {
+                statusLabel.Text = string.Empty;
+                SetConnectionScreenVisible(false);
+                returnButton.Visible = false;
+                SetMainMenuVisible(true);
             };
 
             Controls.Add(engageButton);
@@ -94,13 +101,59 @@ namespace Client.Forms
             Controls.Add(serverIPLabel);
             Controls.Add(serverIPText);
 
-            //InitializeComponent();
+            Controls.Add(connectingLabel);
+            Controls.Add(statusLabel);
+            Controls.Add(returnButton);
         }
 
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
             Text = @"Space Battle";
+        }
+
+        private void SetMainMenuVisible(bool visible)
+        {
+            nameLabel.Visible =
+                nameText.Visible =
+                    preferredSideLabel.Visible =
+                        preferredSideButton.Visible =
+                            serverIPLabel.Visible =
+                                serverIPText.Visible =
+                                    engageButton.Visible = visible;
+        }
+
+        private void SetConnectionScreenVisible(bool visible)
+        {
+            connectingLabel.Visible = statusLabel.Visible = visible;
+        }
+
+        private void TryConnect(IPEndPoint server, GameSession gameSession, bool playerIsRed)
+        {
+            try
+            {
+                var allPlayersConnected = gameSession.ConnectToServer(server, playerIsRed, nameText.Text);
+                if (!allPlayersConnected)
+                {
+                    BeginInvoke(new Action(() => statusLabel.Text = @"Waiting for second player"));
+                    gameSession.WaitForEnemy();
+                }
+                gameSession.Start();
+                BeginInvoke(new Action(() =>
+                {
+                    Visible = false;
+                    gameSession.GameForm.ShowDialog(this);
+                    Dispose();
+                }));
+            }
+            catch (Exception e)
+            {
+                BeginInvoke(new Action(() =>
+                {
+                    statusLabel.Text = e.Message;
+                    returnButton.Visible = true;
+                }));
+            }
         }
 
         private Label CreateLabel(int y, string text = null)
@@ -138,12 +191,12 @@ namespace Client.Forms
             control.Size = new Size(ClientSize.Width, height);
             control.BackColor = backColor;
             control.ForeColor = Color.White;
-            control.Font = new Font(Visual.FontName, 16);
+            control.Font = Visual.ButtonsFont;
             if (text != null)
                 control.Text = text;
         }
 
-        private void SetButtonColor(Button button, bool isRed)
+        private static void SetButtonColor(Button button, bool isRed)
         {
             if (isRed)
             {

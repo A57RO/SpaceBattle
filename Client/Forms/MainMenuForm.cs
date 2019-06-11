@@ -99,16 +99,6 @@ namespace Client.Forms
             Controls.Add(connectingLabel);
             Controls.Add(statusLabel);
             Controls.Add(returnButton);
-            /*
-            while (!gameSession.Connected)
-            {
-
-            }
-            gameSession.StartSolo();
-            Visible = false;
-            gameSession.GameForm.ShowDialog(this);
-            Dispose();
-            */
         }
 
         protected override void OnLoad(EventArgs e)
@@ -150,16 +140,6 @@ namespace Client.Forms
                     gameSession.GameForm.ShowDialog(this);
                     Dispose();
                 }));
-                
-                /*
-                BeginInvoke(new Action(() =>
-                {
-                    gameSession.StartSolo();
-                    Visible = false;
-                    gameSession.GameForm.ShowDialog(this);
-                    Dispose();
-                }));
-                */
 
             }
             catch (Exception e)

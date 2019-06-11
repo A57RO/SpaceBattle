@@ -36,7 +36,7 @@ namespace Client
                 10, 
                 10,
                 new ControlSettings(Keys.ControlKey, Keys.ShiftKey, Keys.Right, Keys.Left, Keys.Up, Keys.Down));
-            gameSession.Start();
+            gameSession.StartSolo();
             Application.Run(gameSession.GameForm);
         }
     }

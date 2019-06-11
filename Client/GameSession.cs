@@ -25,7 +25,7 @@ namespace Client
         private string enemyName;
         private bool gameInProcess;
         private int tickCount = 0;
-        private int disconnectedTicks = 0;
+        private int disconnectedActs = 0;
 
         public bool Connected => serverConnection != null && serverConnection.Connected && playerName == null;
 
@@ -134,11 +134,15 @@ namespace Client
         private void BeginSessionAct()
         {
             var commands = new GameActCommands(controlSettings, GameForm.PressedKeys);
-            Task.Run(() => SendCommandsToServer(commands));
+            //Task.Run(() => SendCommandsToServer(commands));
 
             lock (bottomSideState)
             {
-                bottomSideState.GiveCommandsFromClient(commands);
+                Task.Run(() => SendCommandsToServer(commands));
+                lock (commands)
+                {
+                    bottomSideState.GiveCommandsFromClient(commands);
+                }
                 GameEngine.BeginAct(bottomSideState);
                 if (!bottomSideState.GameOver)
                     Sound.PlaySoundsAtBeginAct(bottomSideState.PlayerEntity);
@@ -168,14 +172,17 @@ namespace Client
 
         private void SendCommandsToServer(GameActCommands commands)
         {
-            var clientUpdate = new ClientUpdate(commands);
-            try
+            lock (commands)
             {
-                Network.SendPacket(clientUpdate, serverConnection.GetStream());
-            }
-            catch (Exception e)
-            {
-                disconnectedTicks++;
+                var clientUpdate = new ClientUpdate(commands);
+                try
+                {
+                    Network.SendPacket(clientUpdate, serverConnection.GetStream());
+                }
+                catch (Exception e)
+                {
+                    disconnectedActs++;
+                }
             }
         }
 
@@ -183,9 +190,11 @@ namespace Client
         {
             while (gameInProcess)
             {
-                try
-                {
+                //try
+                //{
                     var serverUpdate = (ServerUpdate)Network.ReceivePacket(serverConnection.GetStream());
+                    if (serverUpdate.Animations.Count == 0)
+                        throw new Exception();
                     //if (serverUpdate.Animations == null) continue;
                     if (playerIsRed && serverUpdate.SideColorIsRed || !playerIsRed && !serverUpdate.SideColorIsRed)
                     {
@@ -201,11 +210,12 @@ namespace Client
                             topSideState.UpdateStateInAct(serverUpdate.Animations);
                         }
                     }
-                }
+                //}
+                    /*
                 catch (Exception e)
                 {
                     // ignored
-                }
+                }*/
             }
             serverConnection.Close();
             serverConnection.Dispose();

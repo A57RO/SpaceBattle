@@ -140,7 +140,8 @@ namespace Client
             {
                 bottomSideState.GiveCommandsFromClient(commands);
                 GameEngine.BeginAct(bottomSideState);
-                Sound.PlaySoundsAtBeginAct(bottomSideState.PlayerEntity);
+                if (!bottomSideState.GameOver)
+                    Sound.PlaySoundsAtBeginAct(bottomSideState.PlayerEntity);
             }
 
             lock (topSideState)

@@ -11,7 +11,7 @@ namespace Server
 {
     public class PlayerGame
     {
-        private readonly GameState gameState;
+        public readonly GameState gameState;
         private readonly TcpClient client;
         public NetworkStream stream;
         public bool IsRed;

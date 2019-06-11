@@ -1,10 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Security.Policy;
-using System.Text;
 using System.Threading.Tasks;
 using GameData;
 using GameData.Packets;
@@ -35,7 +29,33 @@ namespace SpaceBattle.Server
 
         private void Start()
         {
-            
+            while (true)
+            {
+                try
+                {
+                    Task.Run(() => ListenClient(firstPlayer));
+                    Task.Run(() => ListenClient(secondPlayer));
+                }
+                catch (Exception e)
+                {
+                    // ignored
+                }
+            }
         }
+
+        private void ListenClient(PlayerGame player)
+        {
+            while (true)
+            {
+                var clientUpdate = (ClientUpdate)Network.ReceivePacket(player.stream);
+                player.gameState.GiveCommandsFromClient(clientUpdate.Commands);
+                GameEngine.BeginAct(player.gameState);
+                Network.SendPacket(new ServerUpdate(player.IsRed, player.gameState.Animations), firstPlayer.stream);
+                Network.SendPacket(new ServerUpdate(player.IsRed, player.gameState.Animations), secondPlayer.stream);
+                GameEngine.EndAct(firstPlayer.gameState, secondPlayer.gameState);
+            }
+        }
+
+
     }
 }

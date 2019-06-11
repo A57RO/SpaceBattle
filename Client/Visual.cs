@@ -158,7 +158,16 @@ namespace Client
             if (!toRight)
                 deltaX = -deltaX;
             for (int i = 0; i < value / 5; i++)
-                hud.Rectangles.Add(new Rectangle(beginX + i * deltaX, beginY, rectangleSize.Width, rectangleSize.Height), brush);
+            {
+                var rectangle = new Rectangle(beginX + i * deltaX, beginY, rectangleSize.Width, rectangleSize.Height);
+                if (hud.Rectangles.TryGetValue(rectangle, out var localBrush))
+                {
+                    if (localBrush.Equals(brush)) continue;
+                    hud.Rectangles[rectangle] = brush;
+                }
+                else
+                    hud.Rectangles.Add(rectangle, brush);
+            }
         }
 
         private static void UpdateHUDNumber(DrawingElements hud, string stringValue, int beginX, int beginY, bool toRight)

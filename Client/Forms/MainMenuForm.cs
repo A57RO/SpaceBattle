@@ -31,7 +31,7 @@ namespace Client.Forms
             BackColor = Color.Black;
             BackgroundImageLayout = ImageLayout.Center;
             BackgroundImage = Properties.Resources.BackgroundMainMenu;
-            ClientSize = new Size(200, 320);
+            ClientSize = new Size(200, 416);
 
             engageButton = CreateButton(0, @"Engage");
             preferredSideLabel = CreateLabel(engageButton.Bottom, @"Preferred side:");
@@ -44,7 +44,7 @@ namespace Client.Forms
 
             connectingLabel = CreateLabel(0);
             statusLabel = CreateLabel(connectingLabel.Bottom);
-            statusLabel.Size = new Size(statusLabel.Size.Width, 192);
+            statusLabel.Size = new Size(statusLabel.Size.Width, 320);
             SetConnectionScreenVisible(false);
             returnButton = CreateButton(statusLabel.Bottom, @"Return to menu");
             returnButton.Visible = false;
@@ -99,6 +99,16 @@ namespace Client.Forms
             Controls.Add(connectingLabel);
             Controls.Add(statusLabel);
             Controls.Add(returnButton);
+            /*
+            while (!gameSession.Connected)
+            {
+
+            }
+            gameSession.StartSolo();
+            Visible = false;
+            gameSession.GameForm.ShowDialog(this);
+            Dispose();
+            */
         }
 
         protected override void OnLoad(EventArgs e)
@@ -133,13 +143,24 @@ namespace Client.Forms
                     BeginInvoke(new Action(() => statusLabel.Text = @"Waiting for second player"));
                     gameSession.WaitForEnemy();
                 }
-                gameSession.Start();
                 BeginInvoke(new Action(() =>
                 {
+                    gameSession.Start();
                     Visible = false;
                     gameSession.GameForm.ShowDialog(this);
                     Dispose();
                 }));
+                
+                /*
+                BeginInvoke(new Action(() =>
+                {
+                    gameSession.StartSolo();
+                    Visible = false;
+                    gameSession.GameForm.ShowDialog(this);
+                    Dispose();
+                }));
+                */
+
             }
             catch (Exception e)
             {

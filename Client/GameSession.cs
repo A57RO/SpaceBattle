@@ -26,6 +26,8 @@ namespace Client
         private bool gameInProcess;
         private int tickCount = 0;
 
+        public bool Connected => serverConnection != null && serverConnection.Connected && playerName == null;
+
         public GameSession(int mapWidth, int bottomMapHeight, int topSideMapHeight, ControlSettings controlSettings)
         {
             this.controlSettings = controlSettings;
@@ -77,12 +79,28 @@ namespace Client
             timer.Start();
         }
 
+        public void StartSolo()
+        {
+            var timer = new System.Windows.Forms.Timer { Interval = 10 };
+            timer.Tick += OnTick;
+
+            gameInProcess = true;
+            timer.Start();
+        }
+
         private void OnTick(object sender, EventArgs e)//object obj)
         {
             if (tickCount == 0) BeginSessionAct();
 
             lock (bottomSideState)
             {
+                lock (GameForm.BottomSideHUD)
+                {
+                    GameForm.BottomSideHUD.Clear();
+                    if (!bottomSideState.GameOver)
+                        Visual.UpdatePlayerHUD(GameForm.BottomSideHUD, bottomSideState.PlayerEntity, GameForm.ClientSize, true);
+                }
+
                 lock (GameForm.BottomSideField)
                 {
                     GameForm.BottomSideField.Clear();
@@ -92,6 +110,13 @@ namespace Client
 
             lock (topSideState)
             {
+                lock (GameForm.TopSideHUD)
+                {
+                    GameForm.TopSideHUD.Clear();
+                    if (!topSideState.GameOver)
+                        Visual.UpdatePlayerHUD(GameForm.TopSideHUD, topSideState.PlayerEntity, GameForm.ClientSize, false);
+                }
+
                 lock (GameForm.TopSideField)
                 {
                     GameForm.TopSideField.Clear();
@@ -114,22 +139,12 @@ namespace Client
             {
                 bottomSideState.GiveCommandsFromClient(commands);
                 GameEngine.BeginAct(bottomSideState);
-                lock (GameForm.BottomSideHUD)
-                {
-                    GameForm.BottomSideHUD.Clear();
-                    Visual.UpdatePlayerHUD(GameForm.BottomSideHUD, bottomSideState.PlayerEntity, GameForm.ClientSize, true);
-                }
                 Sound.PlaySoundsAtBeginAct(bottomSideState.PlayerEntity);
             }
 
             lock (topSideState)
             {
                 GameEngine.BeginAct(topSideState);
-                lock (GameForm.TopSideHUD)
-                {
-                    GameForm.TopSideHUD.Clear();
-                    Visual.UpdatePlayerHUD(GameForm.TopSideHUD, topSideState.PlayerEntity, GameForm.ClientSize, false);
-                }
             }
         }
 
@@ -151,26 +166,23 @@ namespace Client
 
         private void UpdateSide(List<EntityAnimation> newAnimations, bool isBottom)
         {
+            /*
             GameState state;
             lock (state = isBottom ? bottomSideState : topSideState)
             {
                 state.UpdateStateInAct(newAnimations);
-
-                DrawingElements hud;
-                lock (hud = isBottom ? GameForm.BottomSideHUD : GameForm.TopSideHUD)
-                {
-                    hud.Clear();
-                    if (!state.GameOver)
-                        Visual.UpdatePlayerHUD(hud, state.PlayerEntity, GameForm.ClientSize, isBottom);
-                }
-
-                DrawingElements gameField;
-                lock (gameField = isBottom ? GameForm.BottomSideField : GameForm.TopSideField)
-                {
-                    gameField.Clear();
-                    Visual.UpdateGameField(gameField, state, isBottom, playerIsRed, tickCount);
-                }
             }
+            */
+            if (isBottom)
+                lock (bottomSideState)
+                {
+                    bottomSideState.UpdateStateInAct(newAnimations);
+                }
+            else
+                lock (topSideState)
+                {
+                    topSideState.UpdateStateInAct(newAnimations);
+                }
         }
 
         private void SendCommandsToServer(GameActCommands commands)

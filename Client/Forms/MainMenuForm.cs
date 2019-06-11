@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Drawing;
-using System.IO;
 using System.Net;
-using System.Net.Sockets;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GameData;
 using GameData.ClientInteraction;
-using GameData.Packets;
 
 namespace Client.Forms
 {
@@ -68,7 +63,7 @@ namespace Client.Forms
 
                 if (IPAddress.TryParse(serverIPText.Text, out var ip))
                 {
-                    connectingLabel.Text = $@"Connecting to {ip}";
+                    connectingLabel.Text = $@"Connection to {ip}";
                     Task.Run(() => TryConnect(new IPEndPoint(ip, Network.ServerPort), gameSession, playerIsRed));
                 }
                 else

@@ -62,10 +62,17 @@ namespace Client
 
         public void Start()
         {
+            if (serverConnection == null || !serverConnection.Connected || playerName == null)
+                throw new MethodAccessException("Метод Start() был вызван до подключения к серверу");
+            if (enemyName == null)
+                throw new MethodAccessException("Метод Start() был вызван до подключения второго игрока");
+
             GameForm.Text = $@": {playerName} vs {enemyName}";
-            gameInProcess = true;
+
             var timer = new System.Windows.Forms.Timer {Interval = 10};
             timer.Tick += OnTick;
+
+            gameInProcess = true;
             Task.Run(() => StartListenServer());
             timer.Start();
         }
@@ -101,7 +108,7 @@ namespace Client
         private void BeginSessionAct()
         {
             var commands = new GameActCommands(controlSettings, GameForm.PressedKeys);
-            Task.Run(() => SendActCommandsToServer(commands));
+            Task.Run(() => SendCommandsToServer(commands));
 
             lock (bottomSideState)
             {
@@ -166,7 +173,7 @@ namespace Client
             }
         }
 
-        private void SendActCommandsToServer(GameActCommands commands)
+        private void SendCommandsToServer(GameActCommands commands)
         {
             var clientUpdate = new ClientUpdate(commands);
             Network.SendPacket(clientUpdate, serverConnection.GetStream());
@@ -188,6 +195,8 @@ namespace Client
                     // ignored
                 }
             }
+            serverConnection.Close();
+            serverConnection.Dispose();
         }
     }
 }

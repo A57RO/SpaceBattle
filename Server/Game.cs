@@ -16,46 +16,61 @@ namespace SpaceBattle.Server
         public Game(PlayerGame player)
         {
             firstPlayer = player;
-            Network.SendPacket(new ServerHello(player.IsRed), player.stream);
+            Network.SendPacket(new ServerHello(player.IsRed), player.Stream);
         }
 
         public void AddPlayer(PlayerGame player)
         {
+            player.IsRed = !firstPlayer.IsRed;
             secondPlayer = player;
-            Network.SendPacket(new ServerHello(!firstPlayer.IsRed, firstPlayer.Name), player.stream);
-            Network.SendPacket(new ServerHello(firstPlayer.IsRed, secondPlayer.Name), firstPlayer.stream);
+            Task.Run(() => Network.SendPacket(new ServerHello(!firstPlayer.IsRed, firstPlayer.Name), player.Stream));
+            Task.Run(() => Network.SendPacket(new ServerHello(firstPlayer.IsRed, secondPlayer.Name), firstPlayer.Stream));
             Start();
         }
 
         private void Start()
         {
-            while (true)
-            {
-                try
-                {
-                    Task.Run(() => ListenClient(firstPlayer));
-                    Task.Run(() => ListenClient(secondPlayer));
-                }
-                catch (Exception e)
-                {
-                    // ignored
-                }
-            }
+            Task.Run(() => ListenClient(firstPlayer));
+            Task.Run(() => ListenClient(secondPlayer));
         }
 
         private void ListenClient(PlayerGame player)
         {
             while (true)
             {
-                var clientUpdate = (ClientUpdate)Network.ReceivePacket(player.stream);
-                player.gameState.GiveCommandsFromClient(clientUpdate.Commands);
-                GameEngine.BeginAct(player.gameState);
-                Network.SendPacket(new ServerUpdate(player.IsRed, player.gameState.Animations), firstPlayer.stream);
-                Network.SendPacket(new ServerUpdate(player.IsRed, player.gameState.Animations), secondPlayer.stream);
-                GameEngine.EndAct(firstPlayer.gameState, secondPlayer.gameState);
+                var clientUpdate = (ClientUpdate)Network.ReceivePacket(player.Stream);
+                if (clientUpdate == null || player.StateInActUpdated) continue;
+                lock (firstPlayer.State)
+                {
+                    lock (secondPlayer.State)
+                    {
+                        if (firstPlayer.State.GameOver || secondPlayer.State.GameOver)
+                            throw new Exception();
+                        if (firstPlayer.State.Animations == null || firstPlayer.State.Animations.Count == 0)
+                            throw new Exception();
+                        player.State.GiveCommandsFromClient(clientUpdate.Commands);
+                        GameEngine.BeginAct(player.State);
+                        if (firstPlayer.State.GameOver || secondPlayer.State.GameOver)
+                            throw new Exception();
+                        if (firstPlayer.State.Animations == null || firstPlayer.State.Animations.Count == 0)
+                            throw new Exception();
+
+                        player.StateInActUpdated = true;
+                        Task.Run(() => Network.SendPacket(new ServerUpdate(player.IsRed, player.State.Animations), firstPlayer.Stream));
+                        Network.SendPacket(new ServerUpdate(player.IsRed, player.State.Animations), secondPlayer.Stream);
+
+                        if (firstPlayer.StateInActUpdated && secondPlayer.StateInActUpdated)
+                        {
+                            GameEngine.EndAct(firstPlayer.State, secondPlayer.State);
+                            if (firstPlayer.State.GameOver || secondPlayer.State.GameOver)
+                                throw new Exception();
+                            if (firstPlayer.State.Animations == null || firstPlayer.State.Animations.Count == 0)
+                                throw new Exception();
+                            firstPlayer.StateInActUpdated = secondPlayer.StateInActUpdated = false;
+                        }
+                    }
+                }
             }
         }
-
-
     }
 }

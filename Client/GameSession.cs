@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Client.Forms;
 using GameData;
 using GameData.ClientInteraction;
+using GameData.Entities;
 using GameData.Packets;
 
 namespace Client
@@ -19,15 +20,16 @@ namespace Client
         private volatile GameState topSideState;
         private volatile GameState bottomSideState;
         private readonly ControlSettings controlSettings;
-        private TcpClient serverConnection;
+        private TcpClient server;
+        private NetworkStream serverConnection;
         private bool playerIsRed;
         private string playerName;
         private string enemyName;
         private bool gameInProcess;
         private int tickCount = 0;
-        private int disconnectedActs = 0;
+        //private int disconnectedActs = 0;
 
-        public bool Connected => serverConnection != null && serverConnection.Connected && playerName == null;
+        public bool Connected => server != null && server.Connected && playerName != null;
 
         public GameSession(int mapWidth, int bottomMapHeight, int topSideMapHeight, ControlSettings controlSettings)
         {
@@ -38,18 +40,17 @@ namespace Client
             gameInProcess = false;
         }
 
-        public bool ConnectToServer(IPEndPoint server, bool playerIsRed, string playerName)
+        public bool ConnectToServer(IPEndPoint serverAddress, bool playerIsRed, string playerName)
         {
             var clientHello = new ClientHello(playerIsRed, playerName);
-            serverConnection = new TcpClient();
-            serverConnection.Connect(server);
-            var stream = serverConnection.GetStream();
-            Network.SendPacket(clientHello, stream);
-            var serverHello = (ServerHello)Network.ReceivePacket(stream);
-            playerIsRed = serverHello.ColorIsRed;
+            server = new TcpClient();
+            server.Connect(serverAddress);
+            serverConnection = server.GetStream();
+            Network.SendPacket(clientHello, serverConnection);
+            var serverHello = (ServerHello)Network.ReceivePacket(serverConnection);
 
             this.playerName = playerName;
-            this.playerIsRed = playerIsRed;
+            this.playerIsRed = serverHello.ColorIsRed;
             if (serverHello.EnemyName == null)
                 return false;
             enemyName = serverHello.EnemyName;
@@ -58,14 +59,13 @@ namespace Client
 
         public void WaitForEnemy()
         {
-            var stream = serverConnection.GetStream();
-            var serverHello = (ServerHello)Network.ReceivePacket(stream);
+            var serverHello = (ServerHello)Network.ReceivePacket(serverConnection);
             enemyName = serverHello.EnemyName;
         }
 
         public void Start()
         {
-            if (serverConnection == null || !serverConnection.Connected || playerName == null)
+            if (!Connected)
                 throw new MethodAccessException("Метод Start() был вызван до подключения к серверу");
             if (enemyName == null)
                 throw new MethodAccessException("Метод Start() был вызван до подключения второго игрока");
@@ -91,42 +91,47 @@ namespace Client
 
         private void OnTick(object sender, EventArgs e)
         {
-            if (tickCount == 0) BeginSessionAct();
-
-            lock (bottomSideState)
+            if (gameInProcess)
             {
-                lock (GameForm.BottomSideHUD)
+                if (tickCount == 0) BeginSessionAct();
+
+                lock (bottomSideState)
                 {
-                    GameForm.BottomSideHUD.Clear();
-                    if (!bottomSideState.GameOver)
-                        Visual.UpdatePlayerHUD(GameForm.BottomSideHUD, bottomSideState.PlayerEntity, GameForm.ClientSize, true);
+                    lock (GameForm.BottomSideHUD)
+                    {
+                        GameForm.BottomSideHUD.Clear();
+                        if (!bottomSideState.GameOver)
+                            Visual.UpdatePlayerHUD(GameForm.BottomSideHUD, bottomSideState.PlayerEntity,
+                                GameForm.ClientSize, true);
+                    }
+
+                    lock (GameForm.BottomSideField)
+                    {
+                        GameForm.BottomSideField.Clear();
+                        Visual.UpdateGameField(GameForm.BottomSideField, bottomSideState, true, playerIsRed, tickCount);
+                    }
                 }
 
-                lock (GameForm.BottomSideField)
+                lock (topSideState)
                 {
-                    GameForm.BottomSideField.Clear();
-                    Visual.UpdateGameField(GameForm.BottomSideField, bottomSideState, true, playerIsRed, tickCount);
+                    lock (GameForm.TopSideHUD)
+                    {
+                        GameForm.TopSideHUD.Clear();
+                        if (!topSideState.GameOver)
+                            Visual.UpdatePlayerHUD(GameForm.TopSideHUD, topSideState.PlayerEntity, GameForm.ClientSize,
+                                false);
+                    }
+
+                    lock (GameForm.TopSideField)
+                    {
+                        GameForm.TopSideField.Clear();
+                        Visual.UpdateGameField(GameForm.TopSideField, topSideState, false, !playerIsRed, tickCount);
+                    }
                 }
+
+                tickCount++;
+                if (tickCount == 9) EndSessionAct();
             }
-
-            lock (topSideState)
-            {
-                lock (GameForm.TopSideHUD)
-                {
-                    GameForm.TopSideHUD.Clear();
-                    if (!topSideState.GameOver)
-                        Visual.UpdatePlayerHUD(GameForm.TopSideHUD, topSideState.PlayerEntity, GameForm.ClientSize, false);
-                }
-
-                lock (GameForm.TopSideField)
-                {
-                    GameForm.TopSideField.Clear();
-                    Visual.UpdateGameField(GameForm.TopSideField, topSideState, false, !playerIsRed, tickCount);
-                }
-            }
-
-            tickCount++;
-            if (tickCount == 9) EndSessionAct();
 
             GameForm.Invalidate();
         }
@@ -134,15 +139,14 @@ namespace Client
         private void BeginSessionAct()
         {
             var commands = new GameActCommands(controlSettings, GameForm.PressedKeys);
-            //Task.Run(() => SendCommandsToServer(commands));
 
             lock (bottomSideState)
             {
-                Task.Run(() => SendCommandsToServer(commands));
                 lock (commands)
                 {
                     bottomSideState.GiveCommandsFromClient(commands);
                 }
+                Task.Run(() => SendCommandsToServer(commands));
                 GameEngine.BeginAct(bottomSideState);
                 if (!bottomSideState.GameOver)
                     Sound.PlaySoundsAtBeginAct(bottomSideState.PlayerEntity);
@@ -175,14 +179,17 @@ namespace Client
             lock (commands)
             {
                 var clientUpdate = new ClientUpdate(commands);
+                Network.SendPacket(clientUpdate, serverConnection);
+                /*
                 try
                 {
-                    Network.SendPacket(clientUpdate, serverConnection.GetStream());
+                    Network.SendPacket(clientUpdate, server.GetStream());
                 }
                 catch (Exception e)
                 {
                     disconnectedActs++;
                 }
+                */
             }
         }
 
@@ -190,35 +197,34 @@ namespace Client
         {
             while (gameInProcess)
             {
-                //try
-                //{
-                    var serverUpdate = (ServerUpdate)Network.ReceivePacket(serverConnection.GetStream());
-                    if (serverUpdate.Animations.Count == 0)
-                        throw new Exception();
-                    //if (serverUpdate.Animations == null) continue;
-                    if (playerIsRed && serverUpdate.SideColorIsRed || !playerIsRed && !serverUpdate.SideColorIsRed)
-                    {
-                        lock (bottomSideState)
-                        {
-                            bottomSideState.UpdateStateInAct(serverUpdate.Animations);
-                        }
-                    }
-                    else
-                    {
-                        lock (topSideState)
-                        {
-                            topSideState.UpdateStateInAct(serverUpdate.Animations);
-                        }
-                    }
-                //}
-                    /*
-                catch (Exception e)
+
+                var serverUpdate = (ServerUpdate)Network.ReceivePacket(serverConnection);
+                if (serverUpdate == null)
+                    throw new Exception();
+                var updatedAnimations = serverUpdate.Animations;
+                if (updatedAnimations == null)
+                    throw new Exception();
+                if (updatedAnimations.Count == 0)
+                    throw new Exception();
+                if (!updatedAnimations.Any(a => a.Entity is Player))
+                    throw new Exception();
+                if (playerIsRed && serverUpdate.SideColorIsRed || !playerIsRed && !serverUpdate.SideColorIsRed)
                 {
-                    // ignored
-                }*/
+                    lock (bottomSideState)
+                    {
+                        bottomSideState.UpdateStateInAct(updatedAnimations);
+                    }
+                }
+                else
+                {
+                    lock (topSideState)
+                    {
+                        topSideState.UpdateStateInAct(updatedAnimations);
+                    }
+                }
             }
-            serverConnection.Close();
-            serverConnection.Dispose();
+            //server.Close();
+            //server.Dispose();
         }
     }
 }

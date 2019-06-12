@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using GameData.ClientInteraction;
 using GameData.Entities;
 
@@ -15,6 +17,7 @@ namespace GameData
 
         public IEntity[,] Map { get; private set; } //[y,x]
         public Player PlayerEntity { get; private set; }
+        //public Player PlayerEntity => (Player)PlayerAnimation?.Entity;
         public EntityAnimation PlayerAnimation { get; private set; }
 
         public List<EntityAnimation> Animations { get; private set; }
@@ -38,6 +41,7 @@ namespace GameData
             PlayerAnimation = new EntityAnimation(PlayerEntity, new EntityAction(), playerPosition);
             Map[playerPosition.Y, playerPosition.X] = PlayerEntity;
             Animations = new List<EntityAnimation>();
+            Animations.Add(PlayerAnimation);
             CommandsFromClient = GameActCommands.IdleCommands;
             GameOver = false;
         }
@@ -55,29 +59,33 @@ namespace GameData
         public void UpdateStateInAct(List<EntityAnimation> newAnimations)
         {
             Animations = newAnimations ?? throw new ArgumentNullException();
-            Map = new IEntity[MapHeight, MapWidth];
-            var newPlayerAnimation = newAnimations.Find(a => a.Entity is Player);
-            if (newPlayerAnimation != null)
+            var playersAnimations = newAnimations.FindAll(a => a.Entity is Player);
+            if (playersAnimations.Any())
             {
-                PlayerAnimation = newPlayerAnimation;
-                PlayerEntity = (Player) newPlayerAnimation.Entity;
+                if (playersAnimations.Count > 1)
+                    throw new InvalidDataException("В списке новых анимаций присутствуют несколько игроков");
+                PlayerAnimation = playersAnimations.Single();
+                PlayerEntity = (Player)PlayerAnimation.Entity;
             }
             else
             {
+                PlayerAnimation = null;
                 PlayerEntity = null;
                 GameOver = true;
             }
         }
+        
         /// <summary>
-        /// Внутреннее обновление состояния из движка по окончанию акта.
+        /// Внутреннее обновление состояния из движка по окончании акта.
         /// </summary>
         /// <param name="newAnimations">Анимации нового состояния</param>
         internal void UpdateStateAfterAct(List<EntityAnimation> newAnimations)
         {
-            UpdateStateInAct(newAnimations);
-            CommandsFromClient = GameActCommands.IdleCommands;
+            Map = new IEntity[MapHeight, MapWidth];
             foreach (var animation in newAnimations)
                 Map[animation.TargetLocation.Y, animation.TargetLocation.X] = animation.Entity;
+            UpdateStateInAct(newAnimations);
+            CommandsFromClient = GameActCommands.IdleCommands;
         }
     }
 }

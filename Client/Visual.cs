@@ -57,7 +57,8 @@ namespace Client
 
         public static void UpdateGameField(DrawingElements elements, GameState state, bool isBottom, bool isRed, int tick)
         {
-            foreach (var animation in state.Animations.OrderBy(a => DrawingPriorities[a.Entity.GetType()]))
+            var ordered = state.Animations.ToList().OrderBy(a => DrawingPriorities[a.Entity.GetType()]);
+            foreach (var animation in ordered)
             {
                 var sprites = GetSpritesForEntity(animation.Entity, isBottom, isRed);
                 var drawingLocation = isBottom

@@ -18,15 +18,16 @@ namespace SpaceBattle.Server
             
         }
  
-        static void ClientThread(Object stateInfo)
+        static void ClientThread(object stateInfo)
         {
+            var client = (TcpClient) stateInfo;
             foreach (var game in Games)
             {
-                if (!game.IsReady)
-                    game.AddPlayer(new PlayerGame((TcpClient)stateInfo));
+                if (game.IsReady) continue;
+                game.AddPlayer(new PlayerGame(client));
                 return;
             }
-            Games.Add(new Game(new PlayerGame((TcpClient)stateInfo)));
+            Games.Add(new Game(new PlayerGame(client)));
         }
 
         public void Listen()

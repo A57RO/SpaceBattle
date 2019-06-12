@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using GameData.Packets;
@@ -12,6 +13,8 @@ namespace GameData
         public static void SendPacket(IPacket packet, NetworkStream stream)
         {
             var serialized = Serializer.Serialize(packet);
+            if (serialized.Length == 0)
+                throw new Exception();
             stream.Write(serialized, 0, serialized.Length);
         }
 
@@ -26,6 +29,9 @@ namespace GameData
             }
             while (stream.DataAvailable);
 
+            if (data.Count == 0)
+                return null;
+                //throw new Exception();
             var packet = Serializer.Deserialize(data.ToArray());
             return (IPacket) packet;
         }

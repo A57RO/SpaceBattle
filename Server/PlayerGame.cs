@@ -11,20 +11,22 @@ namespace Server
 {
     public class PlayerGame
     {
-        public readonly GameState gameState;
-        private readonly TcpClient client;
-        public NetworkStream stream;
         public bool IsRed;
-        public string Name;
+        public readonly string Name;
+        public readonly GameState State;
+        public readonly TcpClient Client;
+        public readonly NetworkStream Stream;
+        public bool StateInActUpdated;
 
         public PlayerGame(TcpClient client)
         {
-            this.client = client;
-            gameState = new GameState();
-            stream = client.GetStream();
-            var hello = (ClientHello)Network.ReceivePacket(stream);
+            this.Client = client;
+            State = new GameState();
+            Stream = client.GetStream();
+            var hello = (ClientHello)Network.ReceivePacket(Stream);
             IsRed = hello.ColorIsRed;
             Name = hello.PlayerName;
+            StateInActUpdated = false;
         }
     }
 }

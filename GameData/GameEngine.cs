@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameData.ClientInteraction;
 using GameData.Entities;
 
 namespace GameData
@@ -117,7 +118,7 @@ namespace GameData
         }
 
         /// <summary>
-        /// Обработка конфликта анимаций в пределах одного сотояния включая только что прыгнувших в это состояние.
+        /// Обработка конфликта анимаций в пределах одного состояния, включая только что прыгнувших в это состояние.
         /// Обновление состояния по завершению конфликта.
         /// </summary>
         /// <param name="state">Текущее состояние</param>

@@ -32,6 +32,9 @@ namespace GameData.Entities
             private set => shieldStrength = value > maxShieldStrength ? maxShieldStrength : value < 0 ? 0 : value;
         }
 
+        public int WeaponPhysicalDamage { get; private set; }
+        public int WeaponEnergyDamage { get; private set; }
+
         private readonly int thrusterCost;
         private readonly int shieldCost;
         private readonly int fireCost;
@@ -45,18 +48,17 @@ namespace GameData.Entities
         {
             if (conflictedEntity is IWeapon weapon)
             {
-                Energy -= weapon.EnergyDamage;
                 if (ShieldStrength > 0)
                 {
-                    Energy -= weapon.PhysicalDamage;
-                    var penetratingDamage = weapon.PhysicalDamage - (int)(weapon.PhysicalDamage * (1 - ShieldStrength));
+                    Energy -= weapon.EnergyDamage;
+                    var penetratingDamage = weapon.PhysicalDamage - (int)(weapon.PhysicalDamage * ShieldStrength);
                     if (penetratingDamage > Armor)
-                        Health -= penetratingDamage + Armor;
+                        Health -= penetratingDamage - Armor;
                     ShieldTakingHit = true;
                 }
                 else
                 {
-                    Health -= weapon.PhysicalDamage + Armor;
+                    Health -= weapon.PhysicalDamage - Armor;
                     HullTakingHit = true;
                 }
             }
@@ -83,14 +85,14 @@ namespace GameData.Entities
                     var spawnLocation = new Location(location.Y - 1, location.X);
                     if (state.IsInsideGameField(spawnLocation))
                     {
-                        action.Spawn.Add(new FriendlyLaserShot(), spawnLocation);
+                        action.Spawn.Add(new FriendlyLaserShot(WeaponPhysicalDamage, WeaponEnergyDamage), spawnLocation);
                         Energy -= fireCost;
                         WeaponsFiring = true;
                     }
                 }
             }
 
-            if (Energy >= 5)
+            if (Energy >= thrusterCost)
             {
                 var horizontalMoveCommand = state.CommandsFromClient.HorizontalMove;
                 if (horizontalMoveCommand != ClientCommand.Idle)
@@ -132,6 +134,9 @@ namespace GameData.Entities
             Armor = 1;
             maxShieldStrength = 0.8;
             ShieldStrength = 0;
+
+            WeaponPhysicalDamage = 10;
+            WeaponEnergyDamage = 25;
 
             thrusterCost = 1;
             shieldCost = 2;

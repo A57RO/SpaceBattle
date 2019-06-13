@@ -95,38 +95,36 @@ namespace Client
             {
                 if (tickCount == 0) BeginSessionAct();
 
+                IOrderedEnumerable<EntityAnimation> bottomSideOrderedAnimations;
                 lock (bottomSideState)
+                    bottomSideOrderedAnimations = Visual.OrderAnimations(bottomSideState.Animations);
+                lock (GameForm.BottomSideField)
                 {
-                    lock (GameForm.BottomSideHUD)
-                    {
-                        GameForm.BottomSideHUD.Clear();
-                        if (!bottomSideState.GameOver)
-                            Visual.UpdatePlayerHUD(GameForm.BottomSideHUD, bottomSideState.PlayerEntity,
-                                GameForm.ClientSize, true);
-                    }
-
-                    lock (GameForm.BottomSideField)
-                    {
-                        GameForm.BottomSideField.Clear();
-                        Visual.UpdateGameField(GameForm.BottomSideField, bottomSideState, true, playerIsRed, tickCount);
-                    }
+                    GameForm.BottomSideField.Clear();
+                    Visual.UpdateGameField(
+                        GameForm.BottomSideField,
+                        bottomSideOrderedAnimations,
+                        true,
+                        playerIsRed,
+                        bottomSideState.MapWidth,
+                        bottomSideState.MapHeight,
+                        tickCount);
                 }
 
+                IOrderedEnumerable<EntityAnimation> topSideOrderedAnimations;
                 lock (topSideState)
+                    topSideOrderedAnimations = Visual.OrderAnimations(topSideState.Animations);
+                lock (GameForm.TopSideField)
                 {
-                    lock (GameForm.TopSideHUD)
-                    {
-                        GameForm.TopSideHUD.Clear();
-                        if (!topSideState.GameOver)
-                            Visual.UpdatePlayerHUD(GameForm.TopSideHUD, topSideState.PlayerEntity, GameForm.ClientSize,
-                                false);
-                    }
-
-                    lock (GameForm.TopSideField)
-                    {
-                        GameForm.TopSideField.Clear();
-                        Visual.UpdateGameField(GameForm.TopSideField, topSideState, false, !playerIsRed, tickCount);
-                    }
+                    GameForm.TopSideField.Clear();
+                    Visual.UpdateGameField(
+                        GameForm.TopSideField,
+                        topSideOrderedAnimations,
+                        false,
+                        !playerIsRed,
+                        topSideState.MapWidth,
+                        topSideState.MapHeight,
+                        tickCount);
                 }
 
                 tickCount++;
@@ -139,15 +137,20 @@ namespace Client
         private void BeginSessionAct()
         {
             var commands = new GameActCommands(controlSettings, GameForm.PressedKeys);
+            Task.Run(() => SendCommandsToServer(commands));
 
             lock (bottomSideState)
             {
-                lock (commands)
-                {
-                    bottomSideState.GiveCommandsFromClient(commands);
-                }
-                Task.Run(() => SendCommandsToServer(commands));
+                bottomSideState.GiveCommandsFromClient(commands);
                 GameEngine.BeginAct(bottomSideState);
+
+                lock (GameForm.BottomSideHUD)
+                {
+                    GameForm.BottomSideHUD.Clear();
+                    if (!bottomSideState.GameOver)
+                        Visual.UpdatePlayerHUD(GameForm.BottomSideHUD, bottomSideState.PlayerEntity, GameForm.ClientSize, true);
+                }
+
                 if (!bottomSideState.GameOver)
                     Sound.PlaySoundsAtBeginAct(bottomSideState.PlayerEntity);
             }
@@ -155,6 +158,13 @@ namespace Client
             lock (topSideState)
             {
                 GameEngine.BeginAct(topSideState);
+                lock (GameForm.TopSideHUD)
+                {
+                    GameForm.TopSideHUD.Clear();
+                    if (!topSideState.GameOver)
+                        Visual.UpdatePlayerHUD(GameForm.TopSideHUD, topSideState.PlayerEntity, GameForm.ClientSize,
+                            false);
+                }
             }
         }
 
@@ -163,10 +173,10 @@ namespace Client
             lock (bottomSideState)
             {
                 lock (topSideState)
-                    GameEngine.EndAct(bottomSideState, topSideState);
-                if (bottomSideState.GameOver || topSideState.GameOver)
                 {
-                    gameInProcess = false;
+                    GameEngine.EndAct(bottomSideState, topSideState);
+                    if (bottomSideState.GameOver || topSideState.GameOver)
+                        gameInProcess = false;
                 }
                 if (!bottomSideState.GameOver)
                     Sound.PlaySoundsAtEndAct(bottomSideState.PlayerEntity);
@@ -176,21 +186,18 @@ namespace Client
 
         private void SendCommandsToServer(GameActCommands commands)
         {
-            lock (commands)
+            var clientUpdate = new ClientUpdate(commands);
+            Network.SendPacket(clientUpdate, serverConnection);
+            /*
+            try
             {
-                var clientUpdate = new ClientUpdate(commands);
-                Network.SendPacket(clientUpdate, serverConnection);
-                /*
-                try
-                {
-                    Network.SendPacket(clientUpdate, server.GetStream());
-                }
-                catch (Exception e)
-                {
-                    disconnectedActs++;
-                }
-                */
+                Network.SendPacket(clientUpdate, server.GetStream());
             }
+            catch (Exception e)
+            {
+                disconnectedActs++;
+            }
+            */
         }
 
         private void StartListenServer()
@@ -199,29 +206,33 @@ namespace Client
             {
 
                 var serverUpdate = (ServerUpdate)Network.ReceivePacket(serverConnection);
-                if (serverUpdate == null)
-                    throw new Exception();
-                var updatedAnimations = serverUpdate.Animations;
-                if (updatedAnimations == null)
-                    throw new Exception();
-                if (updatedAnimations.Count == 0)
-                    throw new Exception();
-                if (!updatedAnimations.Any(a => a.Entity is Player))
+                if (serverUpdate == null) continue;
+                if (serverUpdate.Animations.Contains(null))
                     throw new Exception();
                 if (playerIsRed && serverUpdate.SideColorIsRed || !playerIsRed && !serverUpdate.SideColorIsRed)
-                {
                     lock (bottomSideState)
                     {
-                        bottomSideState.UpdateStateInAct(updatedAnimations);
+                        bottomSideState.UpdateStateInAct(serverUpdate.Animations);
+                        lock (GameForm.BottomSideHUD)
+                        {
+                            GameForm.BottomSideHUD.Clear();
+                            if (!bottomSideState.GameOver)
+                                Visual.UpdatePlayerHUD(GameForm.BottomSideHUD, bottomSideState.PlayerEntity, GameForm.ClientSize, true);
+                        }
                     }
-                }
                 else
-                {
                     lock (topSideState)
                     {
-                        topSideState.UpdateStateInAct(updatedAnimations);
+                        topSideState.UpdateStateInAct(serverUpdate.Animations);
+
+                        lock (GameForm.TopSideHUD)
+                        {
+                            GameForm.TopSideHUD.Clear();
+                            if (!topSideState.GameOver)
+                                Visual.UpdatePlayerHUD(GameForm.TopSideHUD, topSideState.PlayerEntity, GameForm.ClientSize,
+                                    false);
+                        }
                     }
-                }
             }
             //server.Close();
             //server.Dispose();

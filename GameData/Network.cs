@@ -31,7 +31,6 @@ namespace GameData
 
             if (data.Count == 0)
                 return null;
-                //throw new Exception();
             var packet = Serializer.Deserialize(data.ToArray());
             return (IPacket) packet;
         }

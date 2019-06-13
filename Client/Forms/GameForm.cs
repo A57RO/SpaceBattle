@@ -55,14 +55,22 @@ namespace Client.Forms
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            lock (BottomSideField)
-                DrawElements(e, BottomSideField);
             lock (BottomSideHUD)
+            {
                 DrawElements(e, BottomSideHUD);
-            lock (TopSideField)
-                DrawElements(e, TopSideField);
+            }
+            lock (BottomSideField)
+            {
+                DrawElements(e, BottomSideField);
+            }
             lock (TopSideHUD)
+            {
                 DrawElements(e, TopSideHUD);
+            }
+            lock (TopSideField)
+            {
+                DrawElements(e, TopSideField);
+            }
         }
 
         private void DrawElements(PaintEventArgs e, DrawingElements elements)

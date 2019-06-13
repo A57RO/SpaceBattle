@@ -10,11 +10,11 @@ namespace GameData.Entities
             return new EntityAction { DeltaY = 1 };
         }
 
-        public EnemyLaserShot() : base(EnemyLaserShotAct, 10, 25)
+        public EnemyLaserShot(int physicalDamage, int energyDamage) : base(physicalDamage, energyDamage, EnemyLaserShotAct)
         {
         }
 
-        public EnemyLaserShot(FriendlyLaserShot shot) : base(EnemyLaserShotAct, shot.PhysicalDamage, shot.EnergyDamage)
+        public EnemyLaserShot(FriendlyLaserShot shot) : base(shot.PhysicalDamage, shot.EnergyDamage, EnemyLaserShotAct)
         {
         }
     }

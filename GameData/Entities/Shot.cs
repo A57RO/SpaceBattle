@@ -13,7 +13,7 @@ namespace GameData.Entities
         private readonly Func<GameState, Location, EntityAction> act;
         public EntityAction Act(GameState state, Location location) => act(state, location);
 
-        protected Shot(Func<GameState, Location, EntityAction> act, int physicalDamage, int energyDamage)
+        protected Shot(int physicalDamage, int energyDamage, Func<GameState, Location, EntityAction> act)
         {
             PhysicalDamage = physicalDamage;
             EnergyDamage = energyDamage;

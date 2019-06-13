@@ -22,6 +22,9 @@ namespace Client
             {typeof(EnemyLaserShot), 1}
         };
 
+        public static IOrderedEnumerable<EntityAnimation> OrderAnimations(List<EntityAnimation> animations) =>
+            animations.OrderBy(a => DrawingPriorities[a.Entity.GetType()]);
+
         private static Bitmap GetFlippedImage(Bitmap sprite)
         {
             var clone = sprite.Clone() as Bitmap;
@@ -55,20 +58,26 @@ namespace Client
             return sprites;
         }
 
-        public static void UpdateGameField(DrawingElements elements, GameState state, bool isBottom, bool isRed, int tick)
+        public static void UpdateGameField(
+            DrawingElements elements,
+            IOrderedEnumerable<EntityAnimation> orderedAnimations,
+            bool isBottom,
+            bool isRed,
+            int mapWidth,
+            int mapHeight,
+            int tick)
         {
-            var ordered = state.Animations.ToList().OrderBy(a => DrawingPriorities[a.Entity.GetType()]);
-            foreach (var animation in ordered)
+            foreach (var animation in orderedAnimations)
             {
                 var sprites = GetSpritesForEntity(animation.Entity, isBottom, isRed);
                 var drawingLocation = isBottom
                     ? GetShiftedCoordinates(
-                        new Point(animation.BeginActLocation.X, animation.BeginActLocation.Y + state.MapHeight),
+                        new Point(animation.BeginActLocation.X, animation.BeginActLocation.Y + mapHeight),
                         animation.Action.DeltaX, animation.Action.DeltaY, tick)
                     : GetShiftedCoordinatesForTopSide(
                         animation.BeginActLocation,
-                        state.MapWidth,
-                        state.MapHeight,
+                        mapWidth,
+                        mapHeight,
                         animation.Action.DeltaX,
                         animation.Action.DeltaY,
                         tick);
@@ -133,12 +142,12 @@ namespace Client
             var rectangleSize = new Size(middleX / 20 - 1, IconSize);
 
             var leftX = middleX - IconSize - rectangleSize.Width;
-            UpdateHUDNumber(hud, 10.ToString(), leftX, numericY, false); //TODO: Вынести урон в public поле
+            UpdateHUDNumber(hud, player.WeaponPhysicalDamage.ToString(), leftX, numericY, false);
             UpdateHUDBar(hud, player.Health, leftX, scaledY, rectangleSize, Brushes.DarkRed, false);
             UpdateHUDNumber(hud, player.Health.ToString(), leftX, scaledY, false);
 
             var rightX = middleX + IconSize;
-            UpdateHUDNumber(hud, 25.ToString(), rightX, numericY, true);
+            UpdateHUDNumber(hud, player.WeaponEnergyDamage.ToString(), rightX, numericY, true);
             UpdateHUDBar(hud, player.Energy, rightX, scaledY, rectangleSize, Brushes.Indigo, true);
             UpdateHUDNumber(hud, player.Energy.ToString(), rightX, scaledY, true);
         }

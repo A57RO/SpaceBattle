@@ -10,7 +10,7 @@ namespace GameData.Entities
             return new EntityAction {DeltaY = -1};
         }
         
-        public FriendlyLaserShot() : base(FriendlyLaserShotAct, 10, 25)
+        public FriendlyLaserShot(int physicalDamage, int energyDamage) : base(physicalDamage, energyDamage, FriendlyLaserShotAct)
         {
         }
     }

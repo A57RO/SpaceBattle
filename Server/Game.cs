@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using GameData;
 using GameData.Packets;
@@ -44,27 +45,38 @@ namespace SpaceBattle.Server
                 {
                     lock (secondPlayer.State)
                     {
+                        /*
                         if (firstPlayer.State.GameOver || secondPlayer.State.GameOver)
                             throw new Exception();
                         if (firstPlayer.State.Animations == null || firstPlayer.State.Animations.Count == 0)
                             throw new Exception();
+                        */
                         player.State.GiveCommandsFromClient(clientUpdate.Commands);
                         GameEngine.BeginAct(player.State);
+                        /*
                         if (firstPlayer.State.GameOver || secondPlayer.State.GameOver)
                             throw new Exception();
                         if (firstPlayer.State.Animations == null || firstPlayer.State.Animations.Count == 0)
                             throw new Exception();
-
+                        */
+                        if (player.State.Animations.Contains(null))
+                            throw new Exception();
                         player.StateInActUpdated = true;
-                        Task.Run(() => Network.SendPacket(new ServerUpdate(player.IsRed, player.State.Animations), firstPlayer.Stream));
-                        Network.SendPacket(new ServerUpdate(player.IsRed, player.State.Animations), secondPlayer.Stream);
+                        //При параллельной отправке
+                        var updatedAnimations = player.State.Animations.ToList();
+                        Task.Run(() => Network.SendPacket(new ServerUpdate(player.IsRed, updatedAnimations), firstPlayer.Stream));
+                        Task.Run(() => Network.SendPacket(new ServerUpdate(player.IsRed, updatedAnimations), secondPlayer.Stream));
 
                         if (firstPlayer.StateInActUpdated && secondPlayer.StateInActUpdated)
                         {
                             GameEngine.EndAct(firstPlayer.State, secondPlayer.State);
+                            /*
                             if (firstPlayer.State.GameOver || secondPlayer.State.GameOver)
                                 throw new Exception();
                             if (firstPlayer.State.Animations == null || firstPlayer.State.Animations.Count == 0)
+                                throw new Exception();
+                            */
+                            if (firstPlayer.State.Animations.Contains(null) || secondPlayer.State.Animations.Contains(null))
                                 throw new Exception();
                             firstPlayer.StateInActUpdated = secondPlayer.StateInActUpdated = false;
                         }
